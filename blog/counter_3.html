@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Counter 3</title>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+    <style type="text/css">
+      /*<![CDATA[*/
+
+      .box
+      {
+        border: 1px black solid;
+      }
+
+      /*]]>*/
+    </style>
+    <script type="text/javascript">
+      /*<![CDATA[*/
+
+      (
+        function()
+        {
+          var _id = 0;
+          Object.prototype.$id = function()
+          {
+            if(typeof this.$_id === 'undefined')
+            {
+              this.$_id = _id;
+              _id++;
+            }
+            return this.$_id;
+          };
+          Object.prototype.$name = function()
+          {
+            if(typeof this.$_name === 'undefined')
+            {
+              this.$_name = '$$_'+this.$id();
+              window[this.$_name] = this;
+            }
+            return this.$_name;
+          };
+        }
+      )();
+
+      function Counter(draw_id)
+      {
+        this.draw_id = draw_id;
+
+        this.count = undefined;
+
+        this.draw = function()
+        {
+          var html =
+            'Name: '+this.$name()+'<br/>'+
+            'Count: '+this.count+'<br/>'+
+            '<button onclick="'+this.$name()+'.reset();">Reset</button><br/>'+
+            '<button onclick="'+this.$name()+'.increment();">Increment</button>';
+          document.getElementById(this.draw_id).innerHTML = html;
+        };
+
+        this.reset = function()
+        {
+          this.count = 0;
+          this.draw();
+        };
+
+        this.increment = function()
+        {
+          this.count++;
+          this.draw();
+        };
+
+        this.reset();
+      }
+
+      function init()
+      {
+        var c1 = new Counter('d1');
+        c1.increment();
+
+        var c2 = new Counter('d2');
+        c2.increment();
+        c2.increment();
+
+        var c3 = new Counter('d3');
+        c3.increment();
+        c3.increment();
+        c3.increment();
+      }
+
+      /*]]>*/
+    </script>
+  </head>
+  <body onload="init();">
+    <div id="d1" class="box"></div>
+    <br/>
+    <div id="d2" class="box"></div>
+    <br/>
+    <div id="d3" class="box"></div>
+  </body>
+</html>

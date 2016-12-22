@@ -1,0 +1,63 @@
+back()
+{
+  left;
+  left;
+}
+
+right()
+{
+  left;
+  left;
+  left;
+}
+
+fill_helper()
+{
+  if(!wall)
+  {
+    move;
+    fill_restrict();
+    move;
+    back();
+  }
+}
+
+fill_restrict()
+{
+  if(find)
+  {
+    back();
+    return;
+  }
+  if(!have)
+  {
+    back();
+    return;
+  }
+  put;
+  right();
+  repeat(3)
+  {
+    fill_helper();
+    left;
+  }
+}
+
+fill()
+{
+  if(find)
+    return;
+  if(!have)
+    return;
+  put;
+  repeat(4)
+  {
+    fill_helper();
+    left;
+  }
+}
+
+main()
+{
+  fill();
+}

@@ -1,0 +1,62 @@
+back()
+{
+  left;
+  left;
+}
+
+right()
+{
+  left;
+  left;
+  left;
+}
+
+go_forward()
+{
+  while(!wall)
+    move;
+}
+
+sort_helper()
+{
+  loop
+  {
+    right();
+    loop
+    {
+      if(find)
+        take;
+      if(wall)
+        break;
+      move;
+    }
+    if(!have)
+      return;
+    back();
+    loop
+    {
+      if(have)
+        put;
+      if(wall)
+        break;
+      move;
+    }
+    right();
+    move;
+  }
+}
+
+sort()
+{
+  sort_helper();
+  back();
+  go_forward();
+  left;
+  go_forward();
+  back();
+}
+
+main()
+{
+  sort();
+}

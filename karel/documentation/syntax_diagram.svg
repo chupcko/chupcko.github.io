@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="593" height="1201">
+  <title>Karel syntax diagram</title>
+  <desc>Karel syntax diagram</desc>
+  <defs>
+    <style type="text/css">
+      /*<![CDATA[*/
+
+        .name
+        {
+          fill: rgb(100%, 0%, 0%);
+          font-family: lucida grande, tahoma, verdana, arial, helvetica, sans-serif;
+          font-size: 12px;
+          font-weight: bold;
+          stroke: none;
+          text-anchor: end;
+        }
+
+        .terminal_box
+        {
+          stroke: rgb(0%, 0%, 0%);
+          fill: rgb(80%, 80%, 80%);
+          stroke-width: 2;
+        }
+
+        .terminal_text
+        {
+          fill: rgb(0%, 0%, 0%);
+          font-family: lucida grande, tahoma, verdana, arial, helvetica, sans-serif;
+          font-size: 12px;
+          font-weight: bold;
+          stroke: none;
+          text-anchor: start;
+        }
+
+        .terminal_class_box
+        {
+          stroke: rgb(0%, 0%, 0%);
+          fill: rgb(100%, 80%, 80%);
+          stroke-width: 2;
+        }
+
+        .terminal_class_text
+        {
+          fill: rgb(0%, 0%, 0%);
+          font-family: lucida grande, tahoma, verdana, arial, helvetica, sans-serif;
+          font-size: 12px;
+          font-weight: bold;
+          stroke: none;
+          text-anchor: start;
+        }
+
+        .nonterminal_box
+        {
+          stroke: rgb(0%, 0%, 0%);
+          fill: rgb(100%, 80%, 80%);
+          stroke-width: 2;
+        }
+
+        .nonterminal_text
+        {
+          fill: rgb(100%, 0%, 0%);
+          font-family: lucida grande, tahoma, verdana, arial, helvetica, sans-serif;
+          font-size: 12px;
+          font-weight: bold;
+          stroke: none;
+          text-anchor: start;
+        }
+
+        .line
+        {
+          stroke: rgb(0%, 0%, 0%);
+          fill: none;
+          stroke-width: 2;
+        }
+
+      /*]]>*/
+    </style>
+  </defs>
+  <g>
+    <text class="name" x="57" y="37">program</text>
+    <path class="line" d="M 66 33 h 32"/>
+    <path class="line" d="M 162 33 h 32"/>
+    <path class="line" d="M 162 33 h 6 q 10 0 10 -10 v -12 q 0 -10 -10 -10 h -76 q -10 0 -10 10 v 12 q 0 10 10 10 h 6"/>
+    <rect class="nonterminal_box" x="98" y="16" width="64" height="32"/>
+    <text class="nonterminal_text" x="107" y="37">function</text>
+  </g>
+  <g>
+    <text class="name" x="57" y="101">function</text>
+    <path class="line" d="M 66 97 h 16"/>
+    <path class="line" d="M 132 97 h 16"/>
+    <path class="line" d="M 170 97 h 16"/>
+    <path class="line" d="M 208 97 h 16"/>
+    <path class="line" d="M 273 97 h 16"/>
+    <rect class="terminal_class_box" x="82" y="80" width="50" height="32" rx="8" ry="8"/>
+    <text class="terminal_class_text" x="91" y="101">name</text>
+    <rect class="terminal_box" x="148" y="80" width="22" height="32" rx="8" ry="8"/>
+    <text class="terminal_text" x="157" y="101">(</text>
+    <rect class="terminal_box" x="186" y="80" width="22" height="32" rx="8" ry="8"/>
+    <text class="terminal_text" x="195" y="101">)</text>
+    <rect class="nonterminal_box" x="224" y="80" width="49" height="32"/>
+    <text class="nonterminal_text" x="233" y="101">block</text>
+  </g>
+  <g>
+    <text class="name" x="57" y="197">block</text>
+    <path class="line" d="M 66 193 h 16"/>
+    <path class="line" d="M 105 193 h 133"/>
+    <path class="line" d="M 261 193 h 16"/>
+    <path class="line" d="M 206 193 h 6 q 10 0 10 -10 v -12 q 0 -10 -10 -10 h -6"/>
+    <path class="line" d="M 137 161 h -6 q -10 0 -10 10 v 12 q 0 10 10 10 h 6"/>
+    <rect class="terminal_box" x="82" y="176" width="23" height="32" rx="8" ry="8"/>
+    <text class="terminal_text" x="91" y="197">{</text>
+    <rect class="nonterminal_box" x="137" y="144" width="69" height="32"/>
+    <text class="nonterminal_text" x="146" y="165">statment</text>
+    <rect class="terminal_box" x="238" y="176" width="23" height="32" rx="8" ry="8"/>
+    <text class="terminal_text" x="247" y="197">}</text>
+  </g>
+  <g>
+    <text class="name" x="57" y="261">statment</text>
+    <path class="line" d="M 66 257 h 32"/>
+    <path class="line" d="M 173 257 h 16"/>
+    <path class="line" d="M 210 257 h 383"/>
+    <path class="line" d="M 123 305 h 16"/>
+    <path class="line" d="M 161 305 h 16"/>
+    <path class="line" d="M 247 305 h 16"/>
+    <path class="line" d="M 285 305 h 16"/>
+    <path class="line" d="M 370 305 h 32"/>
+    <path class="line" d="M 444 305 h 16"/>
+    <path class="line" d="M 529 305 h 32"/>
+    <path class="line" d="M 370 305 h 6 q 10 0 10 -10 v -12 q 0 -10 10 -10 h 139 q 10 0 10 10 v 12 q 0 10 10 10 h 6"/>
+    <path class="line" d="M 145 353 h 16"/>
+    <path class="line" d="M 183 353 h 16"/>
+    <path class="line" d="M 269 353 h 16"/>
+    <path class="line" d="M 307 353 h 16"/>
+    <path class="line" d="M 392 353 h 169"/>
+    <path class="line" d="M 140 401 h 16"/>
+    <path class="line" d="M 225 401 h 336"/>
+    <path class="line" d="M 153 449 h 16"/>
+    <path class="line" d="M 191 449 h 16"/>
+    <path class="line" d="M 269 449 h 16"/>
+    <path class="line" d="M 307 449 h 16"/>
+    <path class="line" d="M 392 449 h 169"/>
+    <path class="line" d="M 147 497 h 414"/>
+    <path class="line" d="M 66 257 h 6 q 10 0 10 10 v 28 q 0 10 10 10 h 6"/>
+    <path class="line" d="M 561 305 h 6 q 10 0 10 -10 v -28 q 0 -10 10 -10 h 6"/>
+    <path class="line" d="M 82 288 v 54 q 0 10 10 10 h 6"/>
+    <path class="line" d="M 561 353 h 6 q 10 0 10 -10 v -54"/>
+    <path class="line" d="M 82 336 v 54 q 0 10 10 10 h 6"/>
+    <path class="line" d="M 561 401 h 6 q 10 0 10 -10 v -54"/>
+    <path class="line" d="M 82 384 v 54 q 0 10 10 10 h 6"/>
+    <path class="line" d="M 561 449 h 6 q 10 0 10 -10 v -54"/>
+    <path class="line" d="M 82 432 v 54 q 0 10 10 10 h 6"/>
+    <path class="line" d="M 561 497 h 6 q 10 0 10 -10 v -54"/>
+    <rect class="nonterminal_box" x="98" y="240" width="75" height="32"/>
+    <text class="nonterminal_text" x="107" y="261">command</text>
+    <rect class="terminal_box" x="189" y="240" width="21" height="32" rx="8" ry="8"/>
+    <text class="terminal_text" x="198" y="261">;</text>
+    <rect class="terminal_box" x="98" y="288" width="25" height="32" rx="8" ry="8"/>
+    <text class="terminal_text" x="107" y="309">if</text>
+    <rect class="terminal_box" x="139" y="288" width="22" height="32" rx="8" ry="8"/>
+    <text class="terminal_text" x="148" y="309">(</text>
+    <rect class="nonterminal_box" x="177" y="288" width="70" height="32"/>
+    <text class="nonterminal_text" x="186" y="309">condition</text>
+    <rect class="terminal_box" x="263" y="288" width="22" height="32" rx="8" ry="8"/>
+    <text class="terminal_text" x="272" y="309">)</text>
+    <rect class="nonterminal_box" x="301" y="288" width="69" height="32"/>
+    <text class="nonterminal_text" x="310" y="309">statment</text>
+    <rect class="terminal_box" x="402" y="288" width="42" height="32" rx="8" ry="8"/>
+    <text class="terminal_text" x="411" y="309">else</text>
+    <rect class="nonterminal_box" x="460" y="288" width="69" height="32"/>
+    <text class="nonterminal_text" x="469" y="309">statment</text>
+    <rect class="terminal_box" x="98" y="336" width="47" height="32" rx="8" ry="8"/>
+    <text class="terminal_text" x="107" y="357">while</text>
+    <rect class="terminal_box" x="161" y="336" width="22" height="32" rx="8" ry="8"/>
+    <text class="terminal_text" x="170" y="357">(</text>
+    <rect class="nonterminal_box" x="199" y="336" width="70" height="32"/>
+    <text class="nonterminal_text" x="208" y="357">condition</text>
+    <rect class="terminal_box" x="285" y="336" width="22" height="32" rx="8" ry="8"/>
+    <text class="terminal_text" x="294" y="357">)</text>
+    <rect class="nonterminal_box" x="323" y="336" width="69" height="32"/>
+    <text class="nonterminal_text" x="332" y="357">statment</text>
+    <rect class="terminal_box" x="98" y="384" width="42" height="32" rx="8" ry="8"/>
+    <text class="terminal_text" x="107" y="405">loop</text>
+    <rect class="nonterminal_box" x="156" y="384" width="69" height="32"/>
+    <text class="nonterminal_text" x="165" y="405">statment</text>
+    <rect class="terminal_box" x="98" y="432" width="55" height="32" rx="8" ry="8"/>
+    <text class="terminal_text" x="107" y="453">repeat</text>
+    <rect class="terminal_box" x="169" y="432" width="22" height="32" rx="8" ry="8"/>
+    <text class="terminal_text" x="178" y="453">(</text>
+    <rect class="terminal_class_box" x="207" y="432" width="62" height="32" rx="8" ry="8"/>
+    <text class="terminal_class_text" x="216" y="453">number</text>
+    <rect class="terminal_box" x="285" y="432" width="22" height="32" rx="8" ry="8"/>
+    <text class="terminal_text" x="294" y="453">)</text>
+    <rect class="nonterminal_box" x="323" y="432" width="69" height="32"/>
+    <text class="nonterminal_text" x="332" y="453">statment</text>
+    <rect class="nonterminal_box" x="98" y="480" width="49" height="32"/>
+    <text class="nonterminal_text" x="107" y="501">block</text>
+  </g>
+  <g>
+    <text class="name" x="57" y="565">command</text>
+    <path class="line" d="M 66 561 h 32"/>
+    <path class="line" d="M 134 561 h 123"/>
+    <path class="line" d="M 148 609 h 77"/>
+    <path class="line" d="M 134 657 h 91"/>
+    <path class="line" d="M 141 705 h 84"/>
+    <path class="line" d="M 149 753 h 76"/>
+    <path class="line" d="M 165 801 h 60"/>
+    <path class="line" d="M 151 849 h 74"/>
+    <path class="line" d="M 141 897 h 84"/>
+    <path class="line" d="M 148 945 h 16"/>
+    <path class="line" d="M 186 945 h 16"/>
+    <path class="line" d="M 66 561 h 6 q 10 0 10 10 v 28 q 0 10 10 10 h 6"/>
+    <path class="line" d="M 225 609 h 6 q 10 0 10 -10 v -28 q 0 -10 10 -10 h 6"/>
+    <path class="line" d="M 82 592 v 54 q 0 10 10 10 h 6"/>
+    <path class="line" d="M 225 657 h 6 q 10 0 10 -10 v -54"/>
+    <path class="line" d="M 82 640 v 54 q 0 10 10 10 h 6"/>
+    <path class="line" d="M 225 705 h 6 q 10 0 10 -10 v -54"/>
+    <path class="line" d="M 82 688 v 54 q 0 10 10 10 h 6"/>
+    <path class="line" d="M 225 753 h 6 q 10 0 10 -10 v -54"/>
+    <path class="line" d="M 82 736 v 54 q 0 10 10 10 h 6"/>
+    <path class="line" d="M 225 801 h 6 q 10 0 10 -10 v -54"/>
+    <path class="line" d="M 82 784 v 54 q 0 10 10 10 h 6"/>
+    <path class="line" d="M 225 849 h 6 q 10 0 10 -10 v -54"/>
+    <path class="line" d="M 82 832 v 54 q 0 10 10 10 h 6"/>
+    <path class="line" d="M 225 897 h 6 q 10 0 10 -10 v -54"/>
+    <path class="line" d="M 82 880 v 54 q 0 10 10 10 h 6"/>
+    <path class="line" d="M 225 945 h 6 q 10 0 10 -10 v -54"/>
+    <rect class="terminal_box" x="98" y="544" width="36" height="32" rx="8" ry="8"/>
+    <text class="terminal_text" x="107" y="565">left</text>
+    <rect class="terminal_box" x="98" y="592" width="50" height="32" rx="8" ry="8"/>
+    <text class="terminal_text" x="107" y="613">move</text>
+    <rect class="terminal_box" x="98" y="640" width="36" height="32" rx="8" ry="8"/>
+    <text class="terminal_text" x="107" y="661">put</text>
+    <rect class="terminal_box" x="98" y="688" width="43" height="32" rx="8" ry="8"/>
+    <text class="terminal_text" x="107" y="709">take</text>
+    <rect class="terminal_box" x="98" y="736" width="51" height="32" rx="8" ry="8"/>
+    <text class="terminal_text" x="107" y="757">break</text>
+    <rect class="terminal_box" x="98" y="784" width="67" height="32" rx="8" ry="8"/>
+    <text class="terminal_text" x="107" y="805">continue</text>
+    <rect class="terminal_box" x="98" y="832" width="53" height="32" rx="8" ry="8"/>
+    <text class="terminal_text" x="107" y="853">return</text>
+    <rect class="terminal_box" x="98" y="880" width="43" height="32" rx="8" ry="8"/>
+    <text class="terminal_text" x="107" y="901">stop</text>
+    <rect class="terminal_class_box" x="98" y="928" width="50" height="32" rx="8" ry="8"/>
+    <text class="terminal_class_text" x="107" y="949">name</text>
+    <rect class="terminal_box" x="164" y="928" width="22" height="32" rx="8" ry="8"/>
+    <text class="terminal_text" x="173" y="949">(</text>
+    <rect class="terminal_box" x="202" y="928" width="22" height="32" rx="8" ry="8"/>
+    <text class="terminal_text" x="211" y="949">)</text>
+  </g>
+  <g>
+    <text class="name" x="57" y="1045">condition</text>
+    <path class="line" d="M 66 1041 h 101"/>
+    <path class="line" d="M 215 1041 h 32"/>
+    <path class="line" d="M 207 1089 h 8"/>
+    <path class="line" d="M 213 1137 h 2"/>
+    <path class="line" d="M 206 1185 h 9"/>
+    <path class="line" d="M 119 1041 h 6 q 10 0 10 -10 v -12 q 0 -10 -10 -10 h -6"/>
+    <path class="line" d="M 98 1009 h -6 q -10 0 -10 10 v 12 q 0 10 10 10 h 6"/>
+    <path class="line" d="M 135 1041 h 6 q 10 0 10 10 v 28 q 0 10 10 10 h 6"/>
+    <path class="line" d="M 215 1089 h 6 q 10 0 10 -10 v -28 q 0 -10 10 -10 h 6"/>
+    <path class="line" d="M 151 1072 v 54 q 0 10 10 10 h 6"/>
+    <path class="line" d="M 215 1137 h 6 q 10 0 10 -10 v -54"/>
+    <path class="line" d="M 151 1120 v 54 q 0 10 10 10 h 6"/>
+    <path class="line" d="M 215 1185 h 6 q 10 0 10 -10 v -54"/>
+    <rect class="terminal_box" x="98" y="992" width="21" height="32" rx="8" ry="8"/>
+    <text class="terminal_text" x="107" y="1013">!</text>
+    <rect class="terminal_box" x="167" y="1024" width="48" height="32" rx="8" ry="8"/>
+    <text class="terminal_text" x="176" y="1045">north</text>
+    <rect class="terminal_box" x="167" y="1072" width="40" height="32" rx="8" ry="8"/>
+    <text class="terminal_text" x="176" y="1093">wall</text>
+    <rect class="terminal_box" x="167" y="1120" width="46" height="32" rx="8" ry="8"/>
+    <text class="terminal_text" x="176" y="1141">have</text>
+    <rect class="terminal_box" x="167" y="1168" width="39" height="32" rx="8" ry="8"/>
+    <text class="terminal_text" x="176" y="1189">find</text>
+  </g>
+</svg>

@@ -1,0 +1,74 @@
+back()
+{
+  left;
+  left;
+}
+
+right()
+{
+  left;
+  left;
+  left;
+}
+
+turn_to_north()
+{
+  while(!north)
+    left;
+}
+
+go_forward()
+{
+  while(!wall)
+    move;
+}
+
+go_home()
+{
+  turn_to_north();
+  repeat(2)
+  {
+    left;
+    go_forward();
+  }
+  back();
+}
+
+take_from_field()
+{
+  while(find)
+    take;
+}
+
+take_from_column()
+{
+  left;
+  loop
+  {
+    take_from_field();
+    if(wall)
+      break;
+    move;
+  }
+}
+
+take_all()
+{
+  right();
+  while(!wall)
+  {
+    take_from_column();
+    back();
+    go_forward();
+    left;
+    move;
+  }
+  take_from_column();
+}
+
+main()
+{
+  go_home();
+  take_all();
+  go_home();
+}

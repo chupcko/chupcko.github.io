@@ -1,0 +1,31 @@
+.status
+{
+  background-color: hsl(210, 100%, 90%);
+  border-bottom-style: solid;
+  border-color: hsl(210, 100%, 20%);
+  border-left-style: solid;
+  border-right-style: solid;
+  border-top-style: none;
+  border-width: 1px;
+  color: rgb(0%, 80%, 0%);
+  font-weight: bold;
+  padding-bottom: 8px;
+  padding-left: 14px;
+  padding-right: 14px;
+  padding-top: 8px;
+}
+
+.status_message
+{
+  color: rgb(0%, 80%, 0%);
+}
+
+.status_warning
+{
+  color: rgb(70%, 70%, 0%);
+}
+
+.status_error
+{
+  color: rgb(80%, 0%, 0%);
+}

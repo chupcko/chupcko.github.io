@@ -1,0 +1,31 @@
+<program>   ::= <function> + .
+
+<function>  ::= name left_parentheses right_parentheses <block> .
+
+<block>     ::= left_braces <statment> * right_braces .
+
+<statment>  ::= <command> semicolon
+              | if left_parentheses <condition> right_parentheses <statment> ( else <statment> ) ?
+              | while left_parentheses <condition> right_parentheses <statment>
+              | loop <statment>
+              | repeat left_parentheses number right_parentheses <statment>
+              | <block>
+              .
+
+<command>   ::= left
+              | move
+              | put
+              | take
+              | break
+              | continue
+              | return
+              | stop
+              | name left_parentheses right_parentheses
+              |
+              .
+
+<condition> ::= exclamation_mark * ( north
+                                   | wall
+                                   | have
+                                   | find
+                                   ) .

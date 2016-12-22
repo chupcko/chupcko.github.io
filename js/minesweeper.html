@@ -1,0 +1,835 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Minesweeper</title>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+    <style type="text/css">
+      /*<![CDATA[*/
+
+      .body
+      {
+        background-color: rgb(100%, 100%, 100%);
+        color: rgb(0%, 0%, 0%);
+        font-family: lucida grande, tahoma, verdana, arial, helvetica, sans-serif;
+        font-size: 12pt;
+      }
+
+      input[type="text"]
+      {
+        width: 4em;
+      }
+
+      /*]]>*/
+    </style>
+    <script type="text/javascript">
+      /*<![CDATA[*/
+
+      function gameClass(dimX, dimY, minesNumber)
+      {
+        this.dimX = dimX;
+        this.dimY = dimY;
+        this.minesNumber = minesNumber;
+
+        this.fields = undefined;
+        this.playable = undefined;
+        this.shuffled = undefined;
+        this.boom = undefined;
+        this.openedNumber = undefined;
+        this.haveAction = undefined;
+
+        this.ValueBomb = -1;
+        this.FlagOpen  = 0;
+        this.FlagClose = 1;
+        this.FlagMark  = 2;
+        this.FlagBoom  = 3;
+
+        this.CodeClose   = 9;
+        this.CodeMark    = 10;
+        this.CodeBoom    = 11;
+        this.CodeBomb    = 12;
+        this.CodeNotBomb = 13;
+
+        this.reset = function()
+        {
+          this.fields = new Array();
+          for(var x = 0; x < this.dimX; x++)
+          {
+            this.fields[x] = new Array();
+            for(var y = 0; y < this.dimY; y++)
+              this.fields[x][y] =
+              {
+                value: 0,
+                flag: this.FlagClose,
+              };
+          }
+          this.playable = true;
+          this.shuffled = false;
+          this.boom = false;
+          this.openedNumber = 0;
+          this.haveAction = false;
+        };
+
+        this.getCode = function(x, y)
+        {
+          if(this.playable == true)
+            switch(this.fields[x][y].flag)
+            {
+              case this.FlagOpen:
+                return this.fields[x][y].value;
+                break;
+              case this.FlagMark:
+                return this.CodeMark;
+                break;
+              default:
+                return this.CodeClose;
+            }
+          else if(this.boom == true)
+            switch(this.fields[x][y].flag)
+            {
+              case this.FlagMark:
+                if(this.fields[x][y].value != this.ValueBomb)
+                  return this.CodeNotBomb;
+                return this.CodeMark;
+                break;
+              case this.FlagBoom:
+                return this.CodeBoom;
+                break;
+              default:
+                if(this.fields[x][y].value == this.ValueBomb)
+                  return this.CodeBomb;
+                return this.fields[x][y].value;
+            }
+          else
+          {
+            if(this.fields[x][y].value == this.ValueBomb)
+              return this.CodeMark;
+            return this.fields[x][y].value;
+          }
+          return this.CodeClose;
+        };
+
+        this.countAroundWithValueHelper = function(x, y, value)
+        {
+          if
+          (
+            x >= 0 &&
+            x < this.dimX &&
+            y >= 0 &&
+            y < this.dimY &&
+            this.fields[x][y].value == value
+          )
+            return 1;
+          return 0;
+        };
+
+        this.countAroundWithValue = function(x, y, value)
+        {
+          var returnValue =
+            this.countAroundWithValueHelper(x-1, y-1, value)+
+            this.countAroundWithValueHelper(x-1, y  , value)+
+            this.countAroundWithValueHelper(x-1, y+1, value)+
+            this.countAroundWithValueHelper(x,   y-1, value)+
+            this.countAroundWithValueHelper(x,   y+1, value)+
+            this.countAroundWithValueHelper(x+1, y-1, value)+
+            this.countAroundWithValueHelper(x+1, y  , value)+
+            this.countAroundWithValueHelper(x+1, y+1, value);
+          return returnValue;
+        };
+
+        this.countAroundWithFlagHelper = function(x, y, flag)
+        {
+          if
+          (
+            x >= 0 &&
+            x < this.dimX &&
+            y >= 0 &&
+            y < this.dimY &&
+            this.fields[x][y].flag == flag
+          )
+            return 1;
+          return 0;
+        };
+
+        this.countAroundWithFlag = function(x, y, flag)
+        {
+          var returnValue =
+            this.countAroundWithFlagHelper(x-1, y-1, flag)+
+            this.countAroundWithFlagHelper(x-1, y  , flag)+
+            this.countAroundWithFlagHelper(x-1, y+1, flag)+
+            this.countAroundWithFlagHelper(x,   y-1, flag)+
+            this.countAroundWithFlagHelper(x,   y+1, flag)+
+            this.countAroundWithFlagHelper(x+1, y-1, flag)+
+            this.countAroundWithFlagHelper(x+1, y  , flag)+
+            this.countAroundWithFlagHelper(x+1, y+1, flag);
+          return returnValue;
+        };
+
+        this.shuffle = function(initX, initY)
+        {
+          for(var n = 0; n < this.minesNumber; n++)
+          {
+            var x = undefined;
+            var y = undefined;
+            do
+            {
+              x = (Math.random()*this.dimX)|0;
+              y = (Math.random()*this.dimY)|0;
+            }
+            while
+            (
+              (x == initX && y == initY) ||
+              this.fields[x][y].value == this.ValueBomb
+            );
+            this.fields[x][y].value = this.ValueBomb;
+          }
+          for(var x = 0; x < this.dimX; x++)
+            for(var y = 0; y < this.dimY; y++)
+              if(this.fields[x][y].value != this.ValueBomb)
+                this.fields[x][y].value = this.countAroundWithValue(x, y, this.ValueBomb);
+          this.shuffled = true;
+        };
+
+        this.openHintDo = function(x, y)
+        {
+          if
+          (
+            x >= 0 &&
+            x < this.dimX &&
+            y >= 0 &&
+            y < this.dimY &&
+            this.fields[x][y].flag == this.FlagClose
+          )
+            this.open(x, y);
+        };
+
+        this.openHint = function(x, y)
+        {
+          if
+          (
+            this.fields[x][y].value == this.countAroundWithFlag(x, y, this.FlagMark) &&
+            this.countAroundWithFlag(x, y, this.FlagClose) > 0
+          )
+          {
+            this.openHintDo(x-1, y-1);
+            this.openHintDo(x-1, y  );
+            this.openHintDo(x-1, y+1);
+            this.openHintDo(x,   y-1);
+            this.openHintDo(x,   y+1);
+            this.openHintDo(x+1, y-1);
+            this.openHintDo(x+1, y  );
+            this.openHintDo(x+1, y+1);
+          }
+        };
+
+        this.openAllHelper = function(x, y)
+        {
+          if
+          (
+            x >= 0 &&
+            x < this.dimX &&
+            y >= 0 &&
+            y < this.dimY &&
+            this.fields[x][y].flag == this.FlagClose
+          )
+            this.openAll(x, y);
+        };
+
+        this.openAll = function(x, y)
+        {
+          this.fields[x][y].flag = this.FlagOpen;
+          this.openedNumber++;
+          this.haveAction = true;
+          if(this.fields[x][y].value == 0)
+          {
+            this.openAllHelper(x-1, y-1);
+            this.openAllHelper(x-1, y  );
+            this.openAllHelper(x-1, y+1);
+            this.openAllHelper(x,   y-1);
+            this.openAllHelper(x,   y+1);
+            this.openAllHelper(x+1, y-1);
+            this.openAllHelper(x+1, y  );
+            this.openAllHelper(x+1, y+1);
+          }
+        };
+
+        this.open = function(x, y)
+        {
+          if(this.playable == true)
+          {
+            if(this.shuffled != true)
+              this.shuffle(x, y);
+            if(this.fields[x][y].flag == this.FlagOpen)
+              this.openHint(x, y);
+            else
+            {
+              if(this.fields[x][y].value == this.ValueBomb)
+              {
+                this.fields[x][y].flag = this.FlagBoom;
+                this.playable = false;
+                this.boom = true;
+              }
+              else
+              {
+                this.openAll(x, y);
+                if(this.openedNumber == this.dimX*this.dimY-this.minesNumber)
+                  this.playable = false;
+              }
+            }
+          }
+          return this.playable;
+        };
+
+        this.markHintDo = function(x, y)
+        {
+          if
+          (
+            x >= 0 &&
+            x < this.dimX &&
+            y >= 0 &&
+            y < this.dimY &&
+            this.fields[x][y].flag == this.FlagClose
+          )
+            this.mark(x, y);
+        };
+
+        this.markHint = function(x, y)
+        {
+          if(this.countAroundWithFlag(x, y, this.FlagClose) == this.fields[x][y].value-this.countAroundWithFlag(x, y, this.FlagMark))
+          {
+            this.markHintDo(x-1, y-1);
+            this.markHintDo(x-1, y  );
+            this.markHintDo(x-1, y+1);
+            this.markHintDo(x,   y-1);
+            this.markHintDo(x,   y+1);
+            this.markHintDo(x+1, y-1);
+            this.markHintDo(x+1, y  );
+            this.markHintDo(x+1, y+1);
+          }
+        };
+
+        this.mark = function(x, y)
+        {
+          if(this.playable == true)
+          {
+            if(this.fields[x][y].flag == this.FlagOpen)
+              this.markHint(x, y);
+            else
+            if(this.fields[x][y].flag != this.FlagClose)
+              this.fields[x][y].flag = this.FlagClose;
+            else
+            {
+              this.fields[x][y].flag = this.FlagMark;
+              this.haveAction = true;
+            }
+          }
+        };
+
+        this.helpOpenRandom = function()
+        {
+          if(this.playable == true)
+          {
+            var x = undefined;
+            var y = undefined;
+            do
+            {
+              x = (Math.random()*this.dimX)|0;
+              y = (Math.random()*this.dimY)|0;
+            }
+            while(this.fields[x][y].flag != this.FlagClose);
+            this.open(x, y);
+          }
+        };
+
+        this.helpMarkAll = function(onlyOne)
+        {
+          if(this.playable == true)
+          {
+            this.haveAction = false;
+            for(var x = 0; x < this.dimX; x++)
+              for(var y = 0; y < this.dimY; y++)
+                if(this.fields[x][y].flag == this.FlagOpen)
+                {
+                  this.markHint(x, y);
+                  if(onlyOne == true && this.haveAction == true)
+                    return;
+                }
+          }
+        };
+
+        this.helpOpenAll = function(onlyOne)
+        {
+          if(this.playable == true)
+            do
+            {
+              this.haveAction = false;
+              for(var x = 0; x < this.dimX; x++)
+                for(var y = 0; y < this.dimY; y++)
+                  if(this.fields[x][y].flag == this.FlagOpen)
+                  {
+                    this.openHint(x, y);
+                    if(onlyOne == true && this.haveAction == true)
+                      return;
+                  }
+            }
+            while(this.haveAction == true)
+        };
+
+        this.helpPlay = function()
+        {
+          if(this.playable == true)
+          {
+            this.helpOpenAll();
+            if(this.haveAction == true)
+              return;
+            this.helpMarkAll();
+            if(this.haveAction == true)
+              return;
+            this.helpOpenRandom();
+          }
+          else
+            this.reset();
+        };
+
+        this.getPlayable = function()
+        {
+          return this.playable;
+        };
+
+        this.getBoom = function()
+        {
+          return this.boom;
+        };
+
+        this.reset();
+      }
+
+      function boxClass(idName, images, dimX, dimY, minesNumber)
+      {
+        this.idName = idName;
+        this.images = images;
+        this.dimX = dimX;
+        this.dimY = dimY;
+        this.minesNumber = minesNumber;
+
+        this.fieldSize = this.images.getFieldSize();
+        this.frameSize = this.images.getFrameSize();
+        this.frameGrids = this.images.getFrameGrids();
+        this.borderSize = this.frameSize*3;
+        this.frame = this.images.getFrame();
+
+        this.game = new gameClass(this.dimX, this.dimY, this.minesNumber);
+
+        this.autoPlayTime = 500;
+        this.autoPlayTimer = undefined;
+
+        this.point = function(event)
+        {
+          var x = new Number();
+          var y = new Number();
+          if(event.x != undefined && event.y != undefined)
+          {
+            x = event.x;
+            y = event.y;
+          }
+          else
+          {
+            x = event.clientX+document.body.scrollLeft+document.documentElement.scrollLeft;
+            y = event.clientY+document.body.scrollTop+document.documentElement.scrollTop;
+          }
+          x -= this.canvas.offsetLeft;
+          y -= this.canvas.offsetTop;
+          if
+          (
+            x >= this.borderSize+this.frameSize && x < this.borderSize+this.frameSize+this.dimX*this.fieldSize &&
+            y >= this.borderSize+this.frameSize && y < this.borderSize+this.frameSize+this.dimY*this.fieldSize
+          )
+          {
+            var returnValue =
+            {
+              x: ((x-this.borderSize-this.frameSize)/this.fieldSize)|0,
+              y: ((y-this.borderSize-this.frameSize)/this.fieldSize)|0,
+            };
+            return returnValue;
+          }
+          return undefined;
+        }
+
+        this.canvas = document.getElementById(this.idName);
+        this.canvasContext = this.canvas.getContext('2d');
+        this.canvas.addEventListener
+        (
+          'click',
+          (
+            function(that)
+            {
+              return function(event)
+              {
+                var point = that.point(event);
+                if(point != undefined)
+                {
+                  that.game.open(point.x, point.y);
+                  that.draw();
+                }
+                return false;
+              }
+            }
+          )(this),
+          false
+        );
+        this.canvas.addEventListener
+        (
+          'contextmenu',
+          (
+            function(that)
+            {
+              return function(event)
+              {
+                var point = that.point(event);
+                if(point != undefined)
+                {
+                  that.game.mark(point.x, point.y);
+                  that.draw();
+                }
+                event.preventDefault();
+                return false;
+              }
+            }
+          )(this),
+          false
+        );
+        this.canvas.width = this.borderSize+this.frameSize+this.dimX*this.fieldSize+this.frameSize+this.borderSize;
+        this.canvas.height = this.borderSize+this.frameSize+this.dimY*this.fieldSize+this.frameSize+this.borderSize;
+
+        this.openRandom = function()
+        {
+          this.game.helpOpenRandom();
+          this.draw();
+        };
+
+        this.markOne = function()
+        {
+          this.game.helpMarkAll(true);
+          this.draw();
+        };
+
+        this.openOne = function()
+        {
+          this.game.helpOpenAll(true);
+          this.draw();
+        };
+
+        this.markAll = function()
+        {
+          this.game.helpMarkAll(false);
+          this.draw();
+        };
+
+        this.openAll = function()
+        {
+          this.game.helpOpenAll(false);
+          this.draw();
+        };
+
+        this.play = function()
+        {
+          this.game.helpPlay();
+          this.draw();
+        };
+
+        this.autoPlaySetTime = function(time)
+        {
+          this.autoPlayTime = time;
+        };
+
+        this.autoPlayStartStop = function()
+        {
+          if(this.autoPlayTimer == undefined)
+            this.autoPlayTimer = setInterval
+            (
+              (
+                function(self)
+                {
+                  return function()
+                  {
+                    self.play();
+                  }
+                }
+              )(this),
+              this.autoPlayTime
+            );
+          else
+          {
+            clearInterval(this.autoPlayTimer)
+            this.autoPlayTimer = undefined;
+          }
+        };
+
+        this.autoPlayStop = function()
+        {
+          if(this.autoPlayTimer != undefined)
+          {
+            clearInterval(this.autoPlayTimer)
+            this.autoPlayTimer = undefined;
+          }
+        };
+
+        this.draw = function()
+        {
+          if(this.game.getPlayable() == true)
+            this.canvasContext.fillStyle = 'rgb(75%, 75%, 75%)';
+          else if(this.game.getBoom() == true)
+            this.canvasContext.fillStyle = 'rgb(100%, 0%, 0%)';
+          else
+            this.canvasContext.fillStyle = 'rgb(0%, 100%, 0%)';
+          this.canvasContext.fillRect(0, 0, this.canvas.width, this.canvas.height);
+          this.canvasContext.drawImage
+          (
+            this.frame,
+            0,                                                       0,
+            this.frameSize,                                          this.frameSize,
+            this.borderSize,                                         this.borderSize,
+            this.frameSize,                                          this.frameSize
+          );
+          this.canvasContext.drawImage
+          (
+            this.frame,
+            0,                                                       (this.frameGrids-1)*this.frameSize,
+            this.frameSize,                                          this.frameSize,
+            this.borderSize,                                         this.borderSize+this.frameSize+this.dimY*this.fieldSize,
+            this.frameSize,                                          this.frameSize
+          );
+          this.canvasContext.drawImage
+          (
+            this.frame,
+            (this.frameGrids-1)*this.frameSize,                      0,
+            this.frameSize,                                          this.frameSize,
+            this.borderSize+this.frameSize+this.dimX*this.fieldSize, this.borderSize,
+            this.frameSize,                                          this.frameSize
+          );
+          this.canvasContext.drawImage
+          (
+            this.frame,
+            (this.frameGrids-1)*this.frameSize,                      (this.frameGrids-1)*this.frameSize,
+            this.frameSize,                                          this.frameSize,
+            this.borderSize+this.frameSize+this.dimX*this.fieldSize, this.borderSize+this.frameSize+this.dimY*this.fieldSize,
+            this.frameSize,                                          this.frameSize
+          );
+          this.canvasContext.drawImage
+          (
+            this.frame,
+            this.frameSize,                                          0,
+            (this.frameGrids-3)*this.frameSize,                      this.frameSize,
+            this.borderSize+this.frameSize,                          this.borderSize,
+            this.dimX*this.fieldSize,                                this.frameSize
+          );
+          this.canvasContext.drawImage
+          (
+            this.frame,
+            2*this.frameSize,                                        (this.frameGrids-1)*this.frameSize,
+            (this.frameGrids-3)*this.frameSize,                      this.frameSize,
+            this.borderSize+this.frameSize,                          this.borderSize+this.frameSize+this.dimY*this.fieldSize,
+            this.dimX*this.fieldSize,                                this.frameSize
+          );
+          this.canvasContext.drawImage
+          (
+            this.frame,
+            0,                                                       this.frameSize,
+            this.frameSize,                                          (this.frameGrids-3)*this.frameSize,
+            this.borderSize,                                         this.borderSize+this.frameSize,
+            this.frameSize,                                          this.dimY*this.fieldSize
+          );
+          this.canvasContext.drawImage
+          (
+            this.frame,
+            (this.frameGrids-1)*this.frameSize,                      2*this.frameSize,
+            this.frameSize,                                          (this.frameGrids-3)*this.frameSize,
+            this.borderSize+this.frameSize+this.dimX*this.fieldSize, this.borderSize+this.frameSize,
+            this.frameSize,                                          this.dimY*this.fieldSize
+          );
+          for(var x = 0; x < this.dimX; x++)
+            for(var y = 0; y < this.dimY; y++)
+              this.canvasContext.drawImage
+              (
+                this.images.getImage(this.game.getCode(x, y)),
+                this.borderSize+this.frameSize+x*this.fieldSize, this.borderSize+this.frameSize+y*this.fieldSize
+              );
+        };
+
+        this.draw();
+      }
+      var Box = undefined;
+
+      function imagesClass()
+      {
+        this.data =
+        [
+          'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAI0lEQVQoz2NsaGhgIAWwMDAwODg4EK+BiYFEMKphVMOAaQAA8qgCYuGct0oAAAAASUVORK5CYII=',
+          'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAUElEQVQoz2NsaGhgIAWwMDAwODg4EK+BiYFEgFODg4O9g4M9sRqwKsWpAY9qLBrwq8ai4cCBgwcOHKRLKFFNAwt+T0O4yL6i2Ab8QUQXTwMAvzQQozmm/soAAAAASUVORK5CYII=',
+          'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAWUlEQVQoz6VRyQ3AMAijlQfzaIzGaPlVUYDIqPwQvoDH3W1SMDOSOuG1YWFvGLVVMAqHDn2McNfLKihx6g5djF0Ld2h2hg49CV0GaYd8nE/ix6fFs44dxoQFb64ddIR/xVkAAAAASUVORK5CYII=',
+          'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAU0lEQVQoz2NsaGhgIAWwMDAwODg4EK+BiYFEwAJn2eO25+CBA6TZgGwWC1Zj8FhLgR/wmEqyHwjYgGwexDZ7Bwe4IG3igeRQQnYkgXigQloiWQMAMqAXbrRR3JAAAAAASUVORK5CYII=',
+          'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAASklEQVQoz2NsaGhgIAWwMDAwODg4EK+BiYFEwILGd3A4AGEcOOCAzCbfBiZcxlPND0yYxkPYaFxqhBKmu2kQSnSJaWSANTZo7yQALJIW6Nsy7xkAAAAASUVORK5CYII=',
+          'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAATUlEQVQoz2NsaGhgIAWwMDAwODg4EK+BiYFEwAJnHcBrj8OBAxTbgGkYtf2AxzPIdhJlA7IRLPidjmkbzeKBNBuQXctCZPCT7weSNQAALn8TLuGpSPAAAAAASUVORK5CYII=',
+          'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAU0lEQVQoz2NsaGhgIAWwMDAwODg4EK+BiYFEwILMcThwAKuiA0hOYCKoGp8NmOZR2w+43IbdD3gAshEE/IBpG238gN0GPKGJLMVCfAyQ6QeSNQAAhXsVrhPr2eoAAAAASUVORK5CYII=',
+          'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAS0lEQVQoz2NsaGhgIAWwMDAwODg4EK+BiYFEwAJn4bfnwIEDFNsANwMZYFpLsg34NMCNR7acejZgNZ56NuAynrJ4wBqvVEhLJGsAADCEE6hnSRL0AAAAAElFTkSuQmCC',
+          'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAX0lEQVQoz2NsaGhgIAWwMDAwODg4EK+BiYFEwILMOXDgAFZFyE5gIqgaTYoFv3mYplDgBwcHB4h5mKZi9wPJNsANxvTDgQMH4IKUxQPB8EWxAU8CQZZiwSVBtbREsgYAkkkfrrxX2l4AAAAASUVORK5CYII=',
+          'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAOUlEQVQoz2P8//8/A9Hg4MGDTCSpPnDgAAucQ1DDgQMHGBgYSLABAkY1jBQNLPBURawNJKlmYGAAABNOF3BNCy13AAAAAElFTkSuQmCC',
+          'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAZUlEQVQoz5WSUQ7AIAxC0XgvOTo9mftosizTqPhVLS8UtYwxcL0iolpqSe3dHAFJANYOnezkstVm6d6nWuo/EJIHJLPH1qFDKhbgOZAkmcXhWmdFnuiTyh6pzY9/BvJX3Ya21AAebFIrt52peTUAAAAASUVORK5CYII=',
+          'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAYElEQVQoz62SUQrAIAxDk+G9583fvjaEVmfZ/BChTdoXdO9dldMknRXNMSu4Ktia4PuOj1xAtokl1hMAYMZTZmjRw/YsNB4Byyg1YHyLlTf7JCWybkfo0Ykg5revscNzAQ6hFyc1Mq88AAAAAElFTkSuQmCC',
+          'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAZ0lEQVQoz6WR0Q0AIQhDgThYR2O0bsb9mUsAI5EvI2ltn+ruMpklIgDuBdYtOheT4Vh2BZAPtYBkTgKA5OmFiIiIrs+4w8oeqtpBI7l2+vOH7BpvWP80uns7ECxZq7uX0Uvxc4ebPh/uuDAiURO0egAAAABJRU5ErkJggg==',
+          'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAlElEQVQoz5VR2xEEIQgLN/a1lGZp2cq4D5RVdJ07vhhIeCRSa8U/UQCo6u+Ez1vjbUojXKrXcU8AGuEmveqzdU687pjnpJGTZkc3/yAAAAPMDD2P+v7p1hPZopusSRPxJTPaASQbgeTZEG5/WO+2s3EkR3RwYnwmuIKyaDBqXVa92b/09O42T8Yld1KMnpaxtJUlAb5VRUgnD//x0AAAAABJRU5ErkJggg==',
+          'iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAIAAAC0tAIdAAAAAXNSR0IArs4c6QAAAEJJREFUKM9jbGhoYCAOODg4MBGv1N7enol4pQwMDCzIQrhUQ5QyMDAQ65JR1dRRzYIWW4TNJlIpAwMDw4EDB/4TDQASjjXndY/JIwAAAABJRU5ErkJggg=='
+        ];
+        this.image = new Array();
+        for(var i = 0; i < this.data.length; i++)
+        {
+          this.image[i] = new Image()
+          this.image[i].src = 'data:image/png;base64,'+this.data[i];
+        }
+        this.frameIndex = this.data.length-1;
+        this.frameGrids = 5;
+
+        this.isLoaded = function()
+        {
+          for(var i = 0; i < this.data.length; i++)
+            if
+            (
+              this.image[i].complete == false ||
+              (this.image[i].naturalWidth != undefined && this.image[i].naturalWidth == 0)
+            )
+              return false;
+          return true;
+        };
+
+        this.getFieldSize = function()
+        {
+          return this.image[0].naturalWidth;
+        };
+
+        this.getFrameSize = function()
+        {
+          return this.image[this.frameIndex].naturalWidth/this.frameGrids;
+        };
+
+        this.getFrameGrids = function()
+        {
+          return this.frameGrids;
+        };
+
+        this.getImage = function(i)
+        {
+          return this.image[i];
+        };
+
+        this.getFrame = function()
+        {
+          return this.image[this.frameIndex];
+        };
+
+        this.whenLoad = function(finish)
+        {
+          if(this.isLoaded() == true)
+            finish();
+          else
+            setTimeout
+            (
+              (
+                function(that)
+                {
+                  return function()
+                  {
+                    that.whenLoad(finish);
+                  }
+                }
+              )(this),
+              100
+            );
+        };
+      }
+      var Images = undefined;
+
+      function init()
+      {
+        Images = new imagesClass();
+        Images.whenLoad
+        (
+          function()
+          {
+            initFinish();
+          }
+        );
+      }
+
+      var MinDimX = 2;
+      var MaxDimX = 100;
+      var MinDimY = 2;
+      var MaxDimY = 40;
+      var MinMinesNumber = 1;
+      var MinTime = 10;
+      var MaxTime = 5000;
+
+      function initFinish()
+      {
+        if(Box != undefined)
+          Box.autoPlayStop();
+        var dimX = parseInt(document.getElementById('dimX').value);
+        var dimY = parseInt(document.getElementById('dimY').value);
+        var minesNumber = parseInt(document.getElementById('minesNumber').value);
+        if(isNaN(dimX))
+          dimX = MinDimX;
+        dimX = Math.max(dimX, MinDimX);
+        dimX = Math.min(dimX, MaxDimX);
+        if(isNaN(dimY))
+          dimY = MinDimY;
+        dimY = Math.max(dimY, MinDimY);
+        dimY = Math.min(dimY, MaxDimY);
+        if(isNaN(minesNumber))
+          minesNumber = MinMinesNumber;
+        minesNumber = Math.max(minesNumber, MinMinesNumber);
+        minesNumber = Math.min(minesNumber, dimX*dimY-1);
+        document.getElementById('dimX').value = dimX;
+        document.getElementById('dimY').value = dimY;
+        document.getElementById('minesNumber').value = minesNumber;
+        Box = new boxClass('box', Images, dimX, dimY, minesNumber);
+      }
+
+      function autoPlayStartStop()
+      {
+        var time = parseInt(document.getElementById('time').value);
+        if(isNaN(time))
+          time = MinTime;
+        time = Math.max(time, MinTime);
+        time = Math.min(time, MaxTime);
+        document.getElementById('time').value = time;
+        Box.autoPlaySetTime(time);
+        Box.autoPlayStartStop();
+      }
+
+      /*]]>*/
+    </script>
+  </head>
+  <body onload="init();" class="body">
+    <form onsubmit="initFinish(); return false;">
+      X: <input type="text" id="dimX" value="40"/>
+      Y: <input type="text" id="dimY" value="40"/>
+      Mines: <input type="text" id="minesNumber" value="200"/>
+      <input type="submit" value="New"/>
+    </form>
+    <p/>
+    <input type="submit" value="Open Random" onclick="Box.openRandom(); return false;"/>
+    <input type="submit" value="Mark One" onclick="Box.markOne(); return false;"/>
+    <input type="submit" value="Open One" onclick="Box.openOne(); return false;"/>
+    <input type="submit" value="Mark All" onclick="Box.markAll(); return false;"/>
+    <input type="submit" value="Open All" onclick="Box.openAll(); return false;"/>
+    <input type="submit" value="Play" onclick="Box.play(); return false;"/>
+    <p/>
+    <form onsubmit="autoPlayStartStop(); return false;">
+    Time: <input type="text" id="time" value="500"/>
+    <input type="submit" value="Auto Play Start/Stop"/>
+    </form>
+    <p/>
+    <canvas id="box"></canvas>
+    <p/>
+    <b>Goran "CHUPCKO" Lazic</b>
+  </body>
+</html>

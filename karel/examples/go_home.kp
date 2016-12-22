@@ -1,0 +1,13 @@
+main()
+{
+  while(!north)
+    left;
+  repeat(2)
+  {
+    left;
+    while(!wall)
+      move;
+  }
+  left;
+  left;
+}

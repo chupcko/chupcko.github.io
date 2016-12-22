@@ -1,0 +1,68 @@
+labyrinth_1()
+{
+  while(!find)
+  {
+    left;
+    left;
+    left;
+    if(!wall)
+      move;
+    else
+    {
+      left;
+      if(!wall)
+        move;
+      else
+      {
+        left;
+        if(!wall)
+          move;
+        else
+        {
+          left;
+          if(!wall)
+            move;
+          else
+            stop;
+        }
+      }
+    }
+  }
+}
+
+labyrinth_2()
+{
+  while(!find)
+  {
+    left;
+    left;
+    left;
+    if(!wall)
+    {
+      move;
+      continue;
+    }
+    left;
+    if(!wall)
+    {
+      move;
+      continue;
+    }
+    left;
+    if(!wall)
+    {
+      move;
+      continue;
+    }
+    left;
+    if(!wall)
+      move;
+    else
+      stop;
+  }
+}
+
+main()
+{
+  labyrinth_1();
+}

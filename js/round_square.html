@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Round Square</title>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+    <style type="text/css">
+      /*<![CDATA[*/
+.main
+{
+  background-color: rgb(80%, 80%, 80%);
+  color: rgb(0%, 0%, 0%);
+  font-family: lucida grande, tahoma, verdana, arial, helvetica, sans-serif;
+  font-size: 12pt;
+}
+
+.left
+{
+  float: left;
+}
+
+.clear
+{
+  clear: both;
+}
+
+.padding
+{
+  padding-left: 1em;
+}
+
+.link
+{
+  cursor: pointer;
+  text-decoration: underline;
+}
+      /*]]>*/
+    </style>
+    <script type="text/javascript">
+      /*<![CDATA[*/
+function CellClass(canvasContext, offsetX, offsetY)
+{
+  this.canvasContext = canvasContext;
+  this.offsetX = offsetX;
+  this.offsetY = offsetY;
+  this.position = 0;
+  this.step = 1;
+
+  this.cellLineWidth = 1;
+
+  this.cellLineColor = 'rgb(0%, 0%, 0%)';
+  this.markerColor = 'rgb(100%, 100%, 100%)';
+  this.cellSize = 16;
+  this.borderWidth = 4;
+  this.markerHalfWidth = 2;
+
+  this.size = this.borderWidth+this.cellLineWidth+this.cellSize+this.cellLineWidth+this.borderWidth;
+  this.maxPositionQuarter = this.cellLineWidth+this.cellSize;
+  this.maxPosition = 4*this.maxPositionQuarter;
+  this.markerWidth = this.markerHalfWidth+this.cellLineWidth+this.markerHalfWidth;
+
+  this.setColors = function(cellLineColor, markerColor)
+  {
+    this.cellLineColor = cellLineColor;
+    this.markerColor = markerColor;
+  };
+
+  this.normalize = function()
+  {
+    if(!isFinite(this.position))
+    {
+      this.position = 0;
+      return;
+    }
+    if(this.position < 0)
+      this.position += this.maxPosition*(Math.floor(-this.position/this.maxPosition)+1)
+    this.position %= this.maxPosition;
+  }
+
+  this.set = function(position, step)
+  {
+    this.position = position;
+    this.step = step;
+    this.normalize();
+  };
+
+  this.next = function()
+  {
+    this.position += this.step;
+    this.normalize();
+  };
+
+  this.markerX = function()
+  {
+    var x;
+    switch(Math.floor(this.position/this.maxPositionQuarter))
+    {
+      case 0:
+        x = this.position%this.maxPositionQuarter;
+        break;
+      case 1:
+        x = this.maxPositionQuarter;
+        break;
+      case 2:
+        x = this.maxPositionQuarter-this.position%this.maxPositionQuarter;
+        break;
+      case 3:
+        x = 0;
+        break;
+    }
+    return this.offsetX*this.size+this.borderWidth+x;
+  };
+
+  this.markerY = function()
+  {
+    var y;
+    switch(Math.floor(this.position/this.maxPositionQuarter))
+    {
+      case 0:
+        y = 0;
+        break;
+      case 1:
+        y = this.position%this.maxPositionQuarter;
+        break;
+      case 2:
+        y = this.maxPositionQuarter;
+        break;
+      case 3:
+        y = this.maxPositionQuarter-this.position%this.maxPositionQuarter;
+        break;
+    }
+    return this.offsetY*this.size+this.borderWidth+y;
+  };
+
+  this.drawCell = function()
+  {
+    this.canvasContext.beginPath();
+    this.canvasContext.lineWidth = this.cellLineWidth;
+    this.canvasContext.strokeStyle = this.cellLineColor;
+    this.canvasContext.rect
+    (
+      this.offsetX*this.size+this.borderWidth+0.5,
+      this.offsetY*this.size+this.borderWidth+0.5,
+      this.cellSize+this.cellLineWidth,
+      this.cellSize+this.cellLineWidth
+    );
+    this.canvasContext.stroke();
+  };
+
+  this.drawMarker = function()
+  {
+    this.canvasContext.fillStyle = this.markerColor;
+    this.canvasContext.fillRect
+    (
+      this.markerX()-this.markerHalfWidth,
+      this.markerY()-this.markerHalfWidth,
+      this.markerWidth,
+      this.markerWidth
+    );
+  };
+
+  this.normalize();
+}
+function SquareClass(name, maxX, maxY, canvasName)
+{
+  this.name = name;
+  this.maxX = maxX;
+  this.maxY = maxY;
+  this.canvasName = canvasName;
+
+  this.backGroundColor = 'rgb(0%, 0%, 0%)';
+  this.lineColor = 'rgb(50%, 50%, 50%)';
+  this.cellLineColor = 'rgb(10%, 10%, 10%)';
+  this.centerCellLineColor = 'rgb(50%, 10%, 10%)';
+  this.markerColor = 'rgb(100%, 100%, 100%)';
+
+  this.lineWidth = 1;
+  this.doDrawLines = false;
+  this.speed = 20;
+  this.speedAddForLines = 40;
+
+  this.centerX = Math.floor(this.maxX/2);
+  this.centerY = Math.floor(this.maxY/2);
+
+  this.drawLines = function()
+  {
+    for(var x = 0; x < this.maxX-1; x++)
+      for(var y = 0; y < this.maxY; y++)
+      {
+        this.canvasContext.beginPath();
+        this.canvasContext.lineWidth = this.lineWidth;
+        this.canvasContext.strokeStyle = this.lineColor;
+        this.canvasContext.moveTo(this.cells[x][y].markerX()+0.5, this.cells[x][y].markerY()+0.5);
+        this.canvasContext.lineTo(this.cells[x+1][y].markerX()+0.5, this.cells[x+1][y].markerY()+0.5);
+        this.canvasContext.stroke();
+      }
+    for(var x = 0; x < this.maxX; x++)
+      for(var y = 0; y < this.maxY-1; y++)
+      {
+        this.canvasContext.beginPath();
+        this.canvasContext.lineWidth = this.lineWidth;
+        this.canvasContext.strokeStyle = this.lineColor;
+        this.canvasContext.moveTo(this.cells[x][y].markerX()+0.5, this.cells[x][y].markerY()+0.5);
+        this.canvasContext.lineTo(this.cells[x][y+1].markerX()+0.5, this.cells[x][y+1].markerY()+0.5);
+        this.canvasContext.stroke();
+      }
+  };
+
+  this.draw = function()
+  {
+    this.canvasContext.setTransform(1, 0, 0, -1, 0, this.canvas.height);
+    this.canvasContext.fillStyle = this.backGroundColor;
+    this.canvasContext.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    for(var x = 0; x < this.maxX; x++)
+      for(var y = 0; y < this.maxY; y++)
+        this.cells[x][y].drawCell();
+    if(this.doDrawLines)
+      this.drawLines();
+    for(var x = 0; x < this.maxX; x++)
+      for(var y = 0; y < this.maxY; y++)
+        this.cells[x][y].drawMarker();
+  };
+
+  this.linesOn = function()
+  {
+    this.doDrawLines = true;
+    this.speed += this.speedAddForLines;
+    if(this.job != undefined)
+    {
+      this.stop();
+      this.start();
+    }
+  };
+
+  this.linesOff = function()
+  {
+    this.doDrawLines = false;
+    this.speed -= this.speedAddForLines;
+    if(this.speed < 1)
+      this.speed = 1;
+    if(this.job != undefined)
+    {
+      this.stop();
+      this.start();
+    }
+  };
+
+  this.linesToggle = function()
+  {
+    if(this.doDrawLines)
+      this.linesOff();
+    else
+      this.linesOn();
+    this.draw();
+  };
+
+  this.next = function()
+  {
+    for(var x = 0; x < this.maxX; x++)
+      for(var y = 0; y < this.maxY; y++)
+        this.cells[x][y].next();
+  };
+
+  this.job = undefined;
+
+  this.start = function()
+  {
+    if(this.job == undefined)
+      this.job = setInterval
+      (
+        (
+          function(that)
+          {
+            return function()
+            {
+              that.next();
+              that.draw();
+            };
+          }
+        )(this),
+        this.speed
+      );
+  };
+
+  this.stop = function()
+  {
+    if(this.job != undefined)
+    {
+      clearInterval(this.job);
+      this.job = undefined;
+    }
+  };
+
+  this.run = function()
+  {
+    if(this.job == undefined)
+      this.start();
+    else
+      this.stop();
+  };
+
+  this.speedUp = function()
+  {
+    this.speed--;
+    if(this.speed < 1)
+      this.speed = 1;
+  };
+
+  this.speedDown = function()
+  {
+    this.speed++;
+  };
+
+  this.exampleCell = new CellClass(undefined, 0, 0, 0);
+  this.canvas = document.getElementById(this.canvasName);
+  this.canvasContext = this.canvas.getContext('2d');
+  this.canvas.width = this.maxX*this.exampleCell.size;
+  this.canvas.height = this.maxY*this.exampleCell.size;
+
+  this.set = function(expression, step)
+  {
+    for(var xi = 0; xi < this.maxX; xi++)
+      for(var yi = 0; yi < this.maxY; yi++)
+      {
+        var x = xi-this.centerX;
+        var y = yi-this.centerY;
+        var N = this.exampleCell.maxPosition;
+        var maxX = this.maxX;
+        var maxY = this.maxY;
+        this.cells[xi][yi].set
+        (
+          Math.floor(eval(expression)),
+          Math.floor(eval(step))
+        );
+      }
+    this.draw();
+  };
+
+  this.cells = new Array();
+  for(var x = 0; x < this.maxX; x++)
+  {
+    this.cells[x] = new Array();
+    for(var y = 0; y < this.maxY; y++)
+    {
+      this.cells[x][y] = new CellClass
+      (
+        this.canvasContext,
+        x,
+        y
+      );
+      this.cells[x][y].setColors(this.cellLineColor, this.markerColor);
+    }
+  }
+  this.cells[this.centerX][this.centerY].setColors(this.centerCellLineColor, this.markerColor);
+
+  this.draw();
+  window[this.name] = this;
+}
+function ControlClass(name, square, divName)
+{
+  this.name = name;
+  this.square = square;
+  this.divName = divName;
+
+  this.div = document.getElementById(this.divName);
+  this.div.innerHTML =
+   '<form onsubmit="'+this.name+'.set(); return false;">\n'+
+   '<table>\n'+
+   '  <tr>\n'+
+   '    <td><label for="'+this.name+'_expression">Expression:</label></td>\n'+
+   '    <td><input type="text" value="0" id="'+this.name+'_expression"/></td>\n'+
+   '  </tr>\n'+
+   '  <tr>\n'+
+   '    <td><label for="'+this.name+'_step">Step:</label></td>\n'+
+   '    <td><input type="text" value="1" id="'+this.name+'_step"/></td>\n'+
+   '  </tr>\n'+
+   '  <tr>\n'+
+   '    <td>&nbsp;</td>\n'+
+   '    <td><input type="submit" value="Set"/></td>\n'+
+   '  </tr>\n'+
+   '  <tr>\n'+
+   '    <td><label for="'+this.name+'_run">Run:</label></td>\n'+
+   '    <td><input type="checkbox" id="'+this.name+'_run" onchange="'+this.name+'.run(); return false;"/></td>\n'+
+   '  </tr>\n'+
+   '  <tr>\n'+
+   '    <td><label for="'+this.name+'_lines">Lines:</label></td>\n'+
+   '    <td><input type="checkbox" id="'+this.name+'_lines" onchange="'+this.name+'.linesToggle(); return false;"/></td>\n'+
+   '  </tr>\n'+
+   '</table>\n'+
+   '</form>\n'+
+   '<p/>\n'+
+   'Examples:<br/>\n'+
+   '<span class="link" onclick="'+this.name+'.fill(\'x+y\', \'1\'); return false;">x+y, 1</span><br/>\n'+
+   '<span class="link" onclick="'+this.name+'.fill(\'x+y\', \'Math.abs(x+y)%2*2-1\'); return false;">x+y, Math.abs(x+y)%2*2-1</span><br/>\n'+
+   '<span class="link" onclick="'+this.name+'.fill(\'x*y\', \'1\'); return false;">x*y, 1</span><br/>\n'+
+   '<span class="link" onclick="'+this.name+'.fill(\'x*x+y*y\', \'1\'); return false;">x*x+y*y, 1</span><br/>\n'+
+   '<span class="link" onclick="'+this.name+'.fill(\'x*x-y*y\', \'1\'); return false;">x*x-y*y, 1</span><br/>\n'+
+   '<span class="link" onclick="'+this.name+'.fill(\'x^y\', \'1\'); return false;">x^y, 1</span><br/>\n'+
+   '<span class="link" onclick="'+this.name+'.fill(\'0\', \'(x*x+y*y)>102 ?1:-1\'); return false;">0, (x*x+y*y)>102 ?1:-1</span><br/>\n'+
+   '';
+
+  this.set = function()
+  {
+    this.square.set
+    (
+      document.getElementById(this.name+'_expression').value,
+      document.getElementById(this.name+'_step').value
+    );
+  };
+
+  this.run = function()
+  {
+    this.square.run();
+  };
+
+  this.linesToggle = function()
+  {
+    this.square.linesToggle();
+  };
+
+  this.fill = function(expression, step)
+  {
+    document.getElementById(this.name+'_expression').value = expression;
+    document.getElementById(this.name+'_step').value = step;
+    this.square.set(expression, step);
+  }
+
+  window[this.name] = this;
+}
+var SIZE = 31;
+
+function main()
+{
+  new SquareClass('Square', SIZE, SIZE, 'square');
+  new ControlClass('Control', Square, 'control');
+}
+      /*]]>*/
+    </script>
+  </head>
+  <body onload="main();" class="main">
+    <div>
+      <canvas id="square" class="left"></canvas>
+      <div id="control" class="left padding"></div>
+    </div>
+    <div class="clear"></div>
+    <p/>
+    <b>Goran "CHUPCKO" Lazic</b>
+    (<a href="http://beesandbombs.tumblr.com/post/64323157131/dance-of-the-squares">Original</a>)
+  </body>
+</html>

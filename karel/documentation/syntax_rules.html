@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Karel</title>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+    <link rel="stylesheet" type="text/css" href="../css/main.css"/>
+    <style type="text/css">
+      /*<![CDATA[*/
+      /*]]>*/
+    </style>
+    <script type="text/javascript">
+      /*<![CDATA[*/
+      /*]]>*/
+    </script>
+  </head>
+  <body class="main">
+    <pre>
+&lt;program&gt;   ::= &lt;function&gt; + .
+
+&lt;function&gt;  ::= name "(" ")" &lt;block&gt; .
+
+&lt;block&gt;     ::= "{" &lt;statment&gt; * "}" .
+
+&lt;statment&gt;  ::= &lt;command&gt; ";"
+              | "if" "(" &lt;condition&gt; ")" &lt;statment&gt; ( "else" &lt;statment&gt; ) ?
+              | "while" "(" &lt;condition&gt; ")" &lt;statment&gt;
+              | "loop" &lt;statment&gt;
+              | "repeat" "(" number ")" &lt;statment&gt;
+              | &lt;block&gt;
+              .
+
+&lt;command&gt;   ::= "left"
+              | "move"
+              | "put"
+              | "take"
+              | "break"
+              | "continue"
+              | "return"
+              | "stop"
+              | name "(" ")"
+              |
+              .
+
+&lt;condition&gt; ::= "!" * ( "north"
+                      | "wall"
+                      | "have"
+                      | "find"
+                      ) .
+    </pre>
+  </body>
+</html>

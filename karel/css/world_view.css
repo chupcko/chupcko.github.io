@@ -1,0 +1,35 @@
+.world_view_info
+{
+  width: 7em;
+}
+
+.world_view_test
+{
+  color: rgb(100%, 0%, 0%);
+  font-weight: bold;
+}
+
+.world_view_button_command
+{
+  width: 5em;
+}
+
+.world_view_data
+{
+  display: inline-block;
+  font-weight: bold;
+  text-align: right;
+  width: 2em;
+}
+
+.world_view_input
+{
+  font-weight: bold;
+  text-align: right;
+  width: 3em;
+}
+
+.world_view_button_set
+{
+  width: 3em;
+}

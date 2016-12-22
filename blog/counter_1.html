@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Counter 1</title>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+    <style type="text/css">
+      /*<![CDATA[*/
+
+      .box
+      {
+        border: 1px black solid;
+      }
+
+      /*]]>*/
+    </style>
+    <script type="text/javascript">
+      /*<![CDATA[*/
+
+      function Counter(name, draw_id)
+      {
+        this.name = name;
+        this.draw_id = draw_id;
+
+        this.count = undefined;
+
+        this.draw = function()
+        {
+          var html =
+            'Name: '+this.name+'<br/>'+
+            'Count: '+this.count+'<br/>'+
+            '<button onclick="'+this.name+'.reset();">Reset</button><br/>'+
+            '<button onclick="'+this.name+'.increment();">Increment</button>';
+          document.getElementById(this.draw_id).innerHTML = html;
+        };
+
+        this.reset = function()
+        {
+          this.count = 0;
+          this.draw();
+        };
+
+        this.increment = function()
+        {
+          this.count++;
+          this.draw();
+        };
+
+        this.reset();
+      }
+
+      var c1 = undefined;
+      var c2 = undefined;
+      var c3 = undefined;
+
+      function init()
+      {
+        c1 = new Counter('c1', 'd1');
+        c1.increment();
+
+        c2 = new Counter('c2', 'd2');
+        c2.increment();
+        c2.increment();
+
+        c3 = new Counter('c3', 'd3');
+        c3.increment();
+        c3.increment();
+        c3.increment();
+      }
+
+      /*]]>*/
+    </script>
+  </head>
+  <body onload="init();">
+    <div id="d1" class="box"></div>
+    <br/>
+    <div id="d2" class="box"></div>
+    <br/>
+    <div id="d3" class="box"></div>
+  </body>
+</html>

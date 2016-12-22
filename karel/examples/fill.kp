@@ -1,0 +1,28 @@
+fill()
+{
+  if(find)
+    return;
+  if(!have)
+    return;
+  put;
+
+  repeat(4)
+  {
+    left;
+    if(!wall)
+    {
+      move;
+      fill();
+      left;
+      left;
+      move;
+      left;
+      left;
+    }
+  }
+}
+
+main()
+{
+  fill();
+}

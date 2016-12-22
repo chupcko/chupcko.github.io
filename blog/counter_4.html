@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Counter 4</title>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+    <style type="text/css">
+      /*<![CDATA[*/
+
+      .box
+      {
+        border: 1px black solid;
+      }
+
+      /*]]>*/
+    </style>
+    <script type="text/javascript">
+      /*<![CDATA[*/
+
+      (
+        function()
+        {
+          var _id = 0;
+          Object.prototype.$id = function()
+          {
+            if(typeof this.$_id === 'undefined')
+            {
+              this.$_id = _id;
+              _id++;
+            }
+            return this.$_id;
+          };
+          Object.prototype.$name = function()
+          {
+            if(typeof this.$_name === 'undefined')
+            {
+              this.$_name = '$$_'+this.$id();
+              window[this.$_name] = this;
+            }
+            return this.$_name;
+          };
+        }
+      )();
+
+      function Counter(draw_id, initial)
+      {
+        this.draw_id = draw_id;
+
+        if(initial == undefined)
+          initial = 0;
+        this.count = initial;
+
+        this.draw = function()
+        {
+          document.getElementById(this.draw_id).innerHTML =
+            '<button onclick="'+this.$name()+'.reset();">Reset</button> '+
+            '<button onclick="'+this.$name()+'.increment();">Increment</button> '+
+            'Value: <span id="counter_'+this.$id()+'">'+this.count+'</span>';
+        };
+
+        this.redraw = function()
+        {
+          document.getElementById('counter_'+this.$id()).innerHTML = this.count;
+        };
+
+        this.reset = function()
+        {
+          this.count = 0;
+          this.redraw();
+        };
+
+        this.increment = function()
+        {
+          this.count++;
+          this.redraw();
+        };
+
+        this.draw();
+      }
+
+      function init()
+      {
+        var c1 = new Counter('d1');
+        c1.increment();
+
+        var c2 = new Counter('d2', 1);
+        c2.increment();
+        c2.increment();
+
+        var c3 = new Counter('d3', 2);
+        c3.increment();
+        c3.increment();
+        c3.increment();
+      }
+
+      /*]]>*/
+    </script>
+  </head>
+  <body onload="init();">
+    <div id="d1" class="box"></div>
+    <br/>
+    <div id="d2" class="box"></div>
+    <br/>
+    <div id="d3" class="box"></div>
+  </body>
+</html>
