@@ -1,0 +1,660 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Bridg-It</title>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+    <style type="text/css">
+      /*<![CDATA[*/
+.main
+{
+  background-color: rgb(100%, 100%, 100%);
+  color: rgb(0%, 0%, 0%);
+  font-family: lucida grande, tahoma, verdana, arial, helvetica, sans-serif;
+  font-size: 12px;
+}
+
+.overflow
+{
+  overflow: auto;
+}
+
+.left_div
+{
+  float: left;
+  padding: 12px;
+  margin: 12px;
+  border-color: rgb(0%, 0%, 0%);
+  border-style: solid;
+  border-width: 1px;
+}
+      /*]]>*/
+    </style>
+    <script type="text/javascript">
+      /*<![CDATA[*/
+function GameClass(dimension, calculateConnections)
+{
+  this.dimension = dimension;
+  this.calculateConnections = calculateConnections;
+
+  this.FlagEmpty = 0;
+  this.FlagRed = 1;
+  this.FlagBlue = 2;
+
+  this.autoPlayAsRed = undefined;
+  this.bigFlags = undefined;
+  this.smallFlags = undefined;
+  this.status = undefined;
+  this.next = undefined;
+
+  if(this.calculateConnections)
+  {
+    this.connectionsSize = undefined;
+    this.connectionsRed = undefined;
+    this.connectionsBlue = undefined;
+  }
+
+  this.connectionsRedSet = function(x, y)
+  {
+    this.connectionsRed[x][y] = true;
+    this.connectionsRed[y][x] = true;
+  };
+
+  this.connectionsBlueSet = function(x, y)
+  {
+    this.connectionsBlue[x][y] = true;
+    this.connectionsBlue[y][x] = true;
+  };
+
+  this.connectionsInit = function()
+  {
+    this.connectionsSize = this.dimension*(this.dimension+1);
+    this.connectionsRed = [];
+    this.connectionsBlue = [];
+    for(var x = 0; x < this.connectionsSize; x++)
+    {
+      this.connectionsRed[x] = [];
+      this.connectionsBlue[x] = [];
+      for(var y = 0; y < this.connectionsSize; y++)
+      {
+        this.connectionsRed[x][y] = false;
+        this.connectionsBlue[x][y] = false;
+      }
+    }
+    for(var i = 0; i < this.dimension-1; i++)
+    {
+      this.connectionsRedSet(i, i+1);
+      this.connectionsRedSet(this.connectionsSize-i-1, this.connectionsSize-i-2);
+      this.connectionsBlueSet(i, i+1);
+      this.connectionsBlueSet(this.connectionsSize-i-1, this.connectionsSize-i-2);
+    }
+  };
+
+  this.new = function()
+  {
+    this.autoPlayAsRed = false;
+    this.bigFlags = [];
+    for(var x = 0; x < this.dimension; x++)
+    {
+      this.bigFlags[x] = [];
+      for(var y = 0; y < this.dimension; y++)
+        this.bigFlags[x][y] = this.FlagEmpty;
+    }
+    this.smallFlags = [];
+    for(var x = 0; x < this.dimension-1; x++)
+    {
+      this.smallFlags[x] = [];
+      for(var y = 0; y < this.dimension-1; y++)
+        this.smallFlags[x][y] = this.FlagEmpty;
+    }
+    this.status = this.FlagEmpty;
+    this.next = this.FlagRed;
+    if(this.calculateConnections)
+      this.connectionsInit();
+  };
+
+  this.beatMe = function()
+  {
+    this.new();
+    this.autoPlayAsRed = true;
+    this.play(0, 0);
+  };
+
+  this.reachRed = function(node, visited)
+  {
+    if(node == this.connectionsSize-1)
+      return true;
+    visited[node] = true;
+    for(var i = 0; i < this.connectionsSize; i++)
+      if(!visited[i] && this.connectionsRed[node][i])
+        if(this.reachRed(i, visited))
+          return true;
+    return false;
+  };
+
+  this.reachBlue = function(node, visited)
+  {
+    if(node == this.connectionsSize-1)
+      return true;
+    visited[node] = true;
+    for(var i = 0; i < this.connectionsSize; i++)
+      if(!visited[i] && this.connectionsBlue[node][i])
+        if(this.reachBlue(i, visited))
+          return true;
+    return false;
+  };
+
+  this.calculateStatus = function()
+  {
+    if(this.calculateConnections)
+    {
+      var visited = [];
+      for(var i = 0; i < this.connectionsSize; i++)
+        visited[i] = false;
+      switch(this.next)
+      {
+        case this.FlagRed:
+          if(this.reachRed(0, visited))
+            this.status = this.FlagRed;
+          break;
+        case this.FlagBlue:
+          if(this.reachBlue(0, visited))
+            this.status = this.FlagBlue;
+          break;
+      }
+    }
+  };
+
+  this.calculateNext = function()
+  {
+    switch(this.next)
+    {
+      case this.FlagRed:
+        this.next = this.FlagBlue;
+        break;
+      case this.FlagBlue:
+        this.next = this.FlagRed;
+        break;
+    }
+  };
+
+  this.isPlayable = function(x, y)
+  {
+    if
+    (
+      this.status != this.FlagEmpty ||
+      x < 0 ||
+      x >= this.dimension*2-1 ||
+      y < 0 ||
+      y >= this.dimension*2-1 ||
+      x%2 != y%2
+    )
+      return false;
+    if(x%2 == 0)
+      return this.bigFlags[(x/2)|0][(y/2)|0] == this.FlagEmpty;
+    else
+      return this.smallFlags[(x/2)|0][(y/2)|0] == this.FlagEmpty;
+  };
+
+  this.calculateAutoMove = function(x, y)
+  {
+    if(x%2 == 0)
+    {
+      if(x == y)
+        return { x: x-2, y: y };
+      if(x+2 == y)
+        return { x: x+2, y: y };
+      if(x >= y)
+        return { x: x-1, y: y+1 };
+      else
+        return { x: x+1, y: y-1 };
+    }
+    else
+      if(x >= y)
+        return { x: x+1, y: y-1 };
+      else
+        return { x: x-1, y: y+1 };
+  };
+
+  this.play = function(x, y)
+  {
+    if
+    (
+      this.status != this.FlagEmpty ||
+      x < 0 ||
+      x >= this.dimension*2-1 ||
+      y < 0 ||
+      y >= this.dimension*2-1 ||
+      x%2 != y%2
+    )
+      return;
+    xr = (x/2)|0;
+    yr = (y/2)|0;
+    if(x%2 == 0)
+    {
+      if(this.bigFlags[xr][yr] != this.FlagEmpty)
+        return;
+      this.bigFlags[xr][yr] = this.next;
+      if(this.calculateConnections)
+        switch(this.next)
+        {
+          case this.FlagRed:
+            this.connectionsRedSet(yr*this.dimension+xr, (yr+1)*this.dimension+xr);
+            break;
+          case this.FlagBlue:
+            this.connectionsBlueSet(xr*this.dimension+yr, (xr+1)*this.dimension+yr);
+            break;
+        }
+    }
+    else
+    {
+      if(this.smallFlags[xr][yr] != this.FlagEmpty)
+        return;
+      this.smallFlags[xr][yr] = this.next;
+      if(this.calculateConnections)
+        switch(this.next)
+        {
+          case this.FlagRed:
+            this.connectionsRedSet((yr+1)*this.dimension+xr, (yr+1)*this.dimension+xr+1);
+            break;
+          case this.FlagBlue:
+            this.connectionsBlueSet((xr+1)*this.dimension+yr, (xr+1)*this.dimension+yr+1);
+            break;
+        }
+    }
+    this.calculateStatus();
+    this.calculateNext();
+    if(this.autoPlayAsRed && this.next == this.FlagRed)
+    {
+      var autoMove = this.calculateAutoMove(x, y);
+      this.play(autoMove.x, autoMove.y);
+    }
+  };
+
+  this.haveRedHorizontal = function(x, y)
+  {
+    if
+    (
+      x < 0 ||
+      x >= this.dimension-1 ||
+      y < 0 ||
+      y >= this.dimension+1
+    )
+      return false;
+    if
+    (
+      y == 0 ||
+      y == this.dimension
+    )
+      return true;
+    if(this.smallFlags[x][y-1] == this.FlagRed)
+      return true;
+    return false;
+  };
+
+  this.haveRedVertical = function(x, y)
+  {
+    if
+    (
+      x < 0 ||
+      x >= this.dimension ||
+      y < 0 ||
+      y >= this.dimension
+    )
+      return false;
+    if(this.bigFlags[x][y] == this.FlagRed)
+      return true;
+    return false;
+  };
+
+  this.haveBlueHorizontal = function(x, y)
+  {
+    if
+    (
+      x < 0 ||
+      x >= this.dimension ||
+      y < 0 ||
+      y >= this.dimension
+    )
+      return false;
+    if(this.bigFlags[x][y] == this.FlagBlue)
+      return true;
+    return false;
+  };
+
+  this.haveBlueVertical = function(x, y)
+  {
+    if
+    (
+      x < 0 ||
+      x >= this.dimension+1 ||
+      y < 0 ||
+      y >= this.dimension-1
+    )
+      return false;
+    if
+    (
+      x == 0 ||
+      x == this.dimension
+    )
+      return true;
+    if(this.smallFlags[x-1][y] == this.FlagBlue)
+      return true;
+    return false;
+  };
+
+  this.getStatusString = function()
+  {
+    switch(this.status)
+    {
+      case this.FlagEmpty:
+        switch(this.next)
+        {
+          case this.FlagRed:
+            return 'Red play next';
+            break;
+          case this.FlagBlue:
+            return 'Blue play next';
+            break;
+        }
+        break;
+      case this.FlagRed:
+        return 'Red win';
+        break;
+      case this.FlagBlue:
+        return 'Blue win';
+        break;
+    }
+    return '';
+  };
+
+  this.new();
+}
+function GameViewClass(dimension, containerID)
+{
+  if(dimension < 2)
+    dimension = 2;
+
+  this.dimension = dimension;
+  this.container = document.getElementById(containerID);
+
+  this.canvas = undefined;
+  this.canvasContext = undefined;
+
+  this.game = new GameClass(this.dimension, true);
+  this.gameProposal = undefined;
+  this.boxProposal = undefined;
+
+  this.colorBackgroud = 'rgb(100%, 100%, 100%)';
+  this.colorDotRed = 'rgb(100%, 0%, 0%)';
+  this.colorDotBlue = 'rgb(0%, 0%, 100%)';
+  this.colorLineRed = 'rgb(100%, 40%, 40%)';
+  this.colorLineBlue = 'rgb(40%, 40%, 100%)';
+  this.colorProposalRed = 'rgb(100%, 80%, 80%)';
+  this.colorProposalBlue = 'rgb(80%, 80%, 100%)';
+
+  this.lineWidth = 3;
+  this.dotMargin = 2;
+  this.dotWidth = this.dotMargin+this.lineWidth+this.dotMargin;
+  this.lineLength = 5*this.dotWidth;
+  this.dotOffset = 3*this.dotWidth;
+  this.clickWidth = 3*this.dotWidth;
+  this.clickOffset = 2*this.dotWidth;
+  this.periodic = this.dotWidth+this.lineLength;
+
+  this.new = function()
+  {
+    this.game.new();
+    this.gameProposal = undefined;
+    this.boxProposal = undefined;
+    this.draw();
+  };
+
+  this.beatMe = function()
+  {
+    this.game.beatMe();
+    this.gameProposal = undefined;
+    this.boxProposal = undefined;
+    this.draw();
+  };
+
+  this.eventPoint = function(event)
+  {
+    var x = undefined;
+    var y = undefined;
+    if
+    (
+      event.pageX !== undefined &&
+      event.pageY !== undefined
+    )
+    {
+      x = event.pageX;
+      y = event.pageY;
+    }
+    else
+    {
+      x = event.clientX+document.body.scrollLeft+document.documentElement.scrollLeft;
+      y = event.clientY+document.body.scrollTop+document.documentElement.scrollTop;
+    }
+    x -= this.canvas.offsetLeft;
+    y -= this.canvas.offsetTop;
+    return { x: x, y: y };
+  };
+
+  this.findClickBox = function(x, y, offset, size)
+  {
+    if(x-offset >= 0 && y-offset >= 0)
+      return { x: ((x-offset)/size)|0, y: ((y-offset)/size)|0 };
+    return undefined;
+  };
+
+  this.handleClick = function(x, y)
+  {
+    var box = this.findClickBox(x, y, this.clickOffset, this.clickWidth);
+    if(box !== undefined)
+    {
+      this.game.play(box.x, box.y)
+      this.draw();
+    }
+  };
+
+  this.handleMove = function(x, y)
+  {
+    var box = this.findClickBox(x, y, this.clickOffset, this.clickWidth);
+    if
+    (
+      box !== undefined &&
+      this.game.isPlayable(box.x, box.y)
+    )
+    {
+      if
+      (
+        this.boxProposal === undefined ||
+        this.boxProposal.x != box.x ||
+        this.boxProposal.y != box.y
+      )
+      {
+        this.gameProposal = new GameClass(this.dimension, false);
+        this.gameProposal.next = this.game.next;
+        this.gameProposal.play(box.x, box.y);
+        this.boxProposal = { x: box.x, y: box.y };
+        this.draw();
+      }
+    }
+    else
+      if(this.boxProposal !== undefined)
+      {
+        this.gameProposal = undefined;
+        this.boxProposal = undefined;
+        this.draw();
+      }
+  };
+
+  this.init = function()
+  {
+    this.container.innerHTML =
+      '<button onclick="'+this.$name()+'.new();">New</button><p/>'+
+      '<span id="'+this.$name()+'_status"></span><p/>'+
+      '<canvas id="'+this.$name()+'_canvas"></canvas><p/>'+
+      '<button onclick="'+this.$name()+'.beatMe();">Beat me</button>';
+    this.canvas = document.getElementById(this.$name()+'_canvas');
+    this.canvasContext = this.canvas.getContext('2d');
+    this.canvas.addEventListener
+    (
+      'click',
+      (
+        function(that)
+        {
+          return function(event)
+          {
+            var point = that.eventPoint(event);
+            that.handleClick(point.x, point.y);
+            return false;
+          };
+        }
+      )(this),
+      false
+    );
+    this.canvas.addEventListener
+    (
+      'mousemove',
+      (
+        function(that)
+        {
+          return function(event)
+          {
+            var point = that.eventPoint(event);
+            that.handleMove(point.x, point.y);
+            return false;
+          };
+        }
+      )(this),
+      false
+    );
+    this.canvas.width = this.dotOffset+(this.dimension-1)*(this.dotWidth+this.lineLength)+this.dotWidth+this.dotOffset;
+    this.canvas.height = this.canvas.width;
+  };
+
+  this.draw = function()
+  {
+    this.canvasContext.fillStyle = this.colorBackgroud;
+    this.canvasContext.fillRect
+    (
+      0,
+      0,
+      this.canvas.width,
+      this.canvas.height
+    );
+    this.canvasContext.fillStyle = this.colorDotRed;
+    for(var x = 0; x < this.dimension; x++)
+      for(var y = 0; y < this.dimension+1; y++)
+      {
+        this.canvasContext.fillStyle = this.colorDotRed;
+        this.canvasContext.fillRect(this.dotOffset+x*this.periodic, y*this.periodic, this.dotWidth, this.dotWidth);
+        this.canvasContext.fillStyle = this.colorDotBlue;
+        this.canvasContext.fillRect(y*this.periodic, this.dotOffset+x*this.periodic, this.dotWidth, this.dotWidth);
+      }
+    for(var x = 0; x < this.dimension-1; x++)
+      for(var y = 0; y < this.dimension+1; y++)
+      {
+        if(this.game.haveRedHorizontal(x, y))
+        {
+          this.canvasContext.fillStyle = this.colorLineRed;
+          this.canvasContext.fillRect(this.dotOffset+x*this.periodic+this.dotWidth, y*this.periodic+this.dotMargin, this.lineLength, this.lineWidth);
+        }
+        else if(this.gameProposal !== undefined && this.gameProposal.haveRedHorizontal(x, y))
+        {
+          this.canvasContext.fillStyle = this.colorProposalRed;
+          this.canvasContext.fillRect(this.dotOffset+x*this.periodic+this.dotWidth, y*this.periodic+this.dotMargin, this.lineLength, this.lineWidth);
+        }
+        if(this.game.haveBlueVertical(y, x))
+        {
+          this.canvasContext.fillStyle = this.colorLineBlue;
+          this.canvasContext.fillRect(y*this.periodic+this.dotMargin, this.dotOffset+x*this.periodic+this.dotWidth, this.lineWidth, this.lineLength);
+        }
+        else if(this.gameProposal !== undefined && this.gameProposal.haveBlueVertical(y, x))
+        {
+          this.canvasContext.fillStyle = this.colorProposalBlue;
+          this.canvasContext.fillRect(y*this.periodic+this.dotMargin, this.dotOffset+x*this.periodic+this.dotWidth, this.lineWidth, this.lineLength);
+        }
+      }
+    for(var x = 0; x < this.dimension; x++)
+      for(var y = 0; y < this.dimension; y++)
+      {
+        if(this.game.haveRedVertical(x, y))
+        {
+          this.canvasContext.fillStyle = this.colorLineRed;
+          this.canvasContext.fillRect(this.dotOffset+x*this.periodic+this.dotMargin, y*this.periodic+this.dotWidth, this.lineWidth, this.lineLength);
+        }
+        else if(this.gameProposal !== undefined && this.gameProposal.haveRedVertical(x, y))
+        {
+          this.canvasContext.fillStyle = this.colorProposalRed;
+          this.canvasContext.fillRect(this.dotOffset+x*this.periodic+this.dotMargin, y*this.periodic+this.dotWidth, this.lineWidth, this.lineLength);
+        }
+        if(this.game.haveBlueHorizontal(y, x))
+        {
+          this.canvasContext.fillStyle = this.colorLineBlue;
+          this.canvasContext.fillRect(y*this.periodic+this.dotWidth, this.dotOffset+x*this.periodic+this.dotMargin, this.lineLength, this.lineWidth);
+        }
+        else if(this.gameProposal !== undefined && this.gameProposal.haveBlueHorizontal(y, x))
+        {
+          this.canvasContext.fillStyle = this.colorProposalBlue;
+          this.canvasContext.fillRect(y*this.periodic+this.dotWidth, this.dotOffset+x*this.periodic+this.dotMargin, this.lineLength, this.lineWidth);
+        }
+      }
+    document.getElementById(this.$name()+'_status').innerHTML = this.game.getStatusString();
+  };
+
+  this.init();
+  this.draw();
+}
+(
+  function()
+  {
+    var _id = 0;
+    Object.prototype.$id = function()
+    {
+      if(typeof this.$_id === 'undefined')
+      {
+        this.$_id = _id;
+        _id++;
+      }
+      return this.$_id;
+    };
+    Object.prototype.$name = function()
+    {
+      if(typeof this.$_name === 'undefined')
+      {
+        this.$_name = '$$_'+this.$id();
+        window[this.$_name] = this;
+      }
+      return this.$_name;
+    };
+  }
+)();
+
+function main()
+{
+  new GameViewClass(7, 'game_view_7');
+  new GameViewClass(6, 'game_view_6');
+  new GameViewClass(5, 'game_view_5');
+  new GameViewClass(4, 'game_view_4');
+  new GameViewClass(3, 'game_view_3');
+  new GameViewClass(2, 'game_view_2');
+}
+      /*]]>*/
+    </script>
+  </head>
+  <body class="main" onload="main();">
+    Connect top red line with bottom red line if you play as first, or left blue line with right blue line if you play as second.
+    <div class="overflow">
+      <div class="left_div" id="game_view_7"></div>
+      <div class="left_div" id="game_view_6"></div>
+      <div class="left_div" id="game_view_5"></div>
+      <div class="left_div" id="game_view_4"></div>
+      <div class="left_div" id="game_view_3"></div>
+      <div class="left_div" id="game_view_2"></div>
+    </div><p/>
+    <b>Goran "CHUPCKO" Lazic</b>
+  </body>
+</html>
