@@ -6,7 +6,7 @@
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
     <style type="text/css">
       /*<![CDATA[*/
-.main
+.body
 {
   background-color: rgb(100%, 100%, 100%);
   color: rgb(0%, 0%, 0%);
@@ -402,20 +402,23 @@ function GameViewClass(dimension, containerID)
   this.clickOffset = 2*this.dotWidth;
   this.periodic = this.dotWidth+this.lineLength;
 
-  this.new = function()
+  this.clearProposal = function()
   {
-    this.game.new();
     this.gameProposal = undefined;
     this.boxProposal = undefined;
     this.draw();
   };
 
+  this.new = function()
+  {
+    this.game.new();
+    this.clearProposal();
+  };
+
   this.beatMe = function()
   {
     this.game.beatMe();
-    this.gameProposal = undefined;
-    this.boxProposal = undefined;
-    this.draw();
+    this.clearProposal();
   };
 
   this.eventPoint = function(event)
@@ -441,16 +444,100 @@ function GameViewClass(dimension, containerID)
     return { x: x, y: y };
   };
 
-  this.findClickBox = function(x, y, offset, size)
+  this.findPeriodicBox = function(x, y, offsetX, offsetY, sizeX, sizeY, periodicX, periodicY)
   {
-    if(x-offset >= 0 && y-offset >= 0)
-      return { x: ((x-offset)/size)|0, y: ((y-offset)/size)|0 };
+    if
+    (
+      x-offsetX >= 0 &&
+      y-offsetY >= 0 &&
+      (x-offsetX)%periodicX < sizeX &&
+      (y-offsetY)%periodicY < sizeY
+    )
+      return { x: ((x-offsetX)/periodicX)|0, y: ((y-offsetY)/periodicY)|0 };
     return undefined;
   };
 
+  this.findBox = function(x, y)
+  {
+    var box = this.findPeriodicBox
+    (
+      x,
+      y,
+      this.clickOffset,
+      this.clickOffset,
+      this.clickWidth,
+      this.clickWidth,
+      this.clickWidth,
+      this.clickWidth
+    );
+    if(box !== undefined)
+      return box;
+    switch(this.game.next)
+    {
+      case this.game.FlagRed:
+        box = this.findPeriodicBox
+        (
+          x,
+          y,
+          this.dotOffset,
+          this.dotWidth,
+          this.dotWidth,
+          this.lineLength,
+          this.dotWidth+this.lineLength,
+          this.dotWidth+this.lineLength
+        );
+        if(box !== undefined)
+          return { x: box.x*2, y: box.y*2 };
+        box = this.findPeriodicBox
+        (
+          x,
+          y,
+          this.dotOffset+this.dotWidth,
+          this.dotWidth+this.lineLength,
+          this.lineLength,
+          this.dotWidth,
+          this.dotWidth+this.lineLength,
+          this.dotWidth+this.lineLength
+        );
+        if(box !== undefined)
+          return { x: box.x*2+1, y: box.y*2+1 };
+        break;
+      case this.game.FlagBlue:
+      case this.game.FlagRed:
+        box = this.findPeriodicBox
+        (
+          x,
+          y,
+          this.dotWidth,
+          this.dotOffset,
+          this.lineLength,
+          this.dotWidth,
+          this.dotWidth+this.lineLength,
+          this.dotWidth+this.lineLength
+        );
+        if(box !== undefined)
+          return { x: box.x*2, y: box.y*2 };
+        box = this.findPeriodicBox
+        (
+          x,
+          y,
+          this.dotWidth+this.lineLength,
+          this.dotOffset+this.dotWidth,
+          this.dotWidth,
+          this.lineLength,
+          this.dotWidth+this.lineLength,
+          this.dotWidth+this.lineLength
+        );
+        if(box !== undefined)
+          return { x: box.x*2+1, y: box.y*2+1 };
+        break;
+    }
+    return undefined;
+  }
+
   this.handleClick = function(x, y)
   {
-    var box = this.findClickBox(x, y, this.clickOffset, this.clickWidth);
+    var box = this.findBox(x, y);
     if(box !== undefined)
     {
       this.game.play(box.x, box.y)
@@ -460,7 +547,7 @@ function GameViewClass(dimension, containerID)
 
   this.handleMove = function(x, y)
   {
-    var box = this.findClickBox(x, y, this.clickOffset, this.clickWidth);
+    var box = this.findBox(x, y);
     if
     (
       box !== undefined &&
@@ -483,11 +570,7 @@ function GameViewClass(dimension, containerID)
     }
     else
       if(this.boxProposal !== undefined)
-      {
-        this.gameProposal = undefined;
-        this.boxProposal = undefined;
-        this.draw();
-      }
+        this.clearProposal();
   };
 
   this.init = function()
@@ -545,7 +628,6 @@ function GameViewClass(dimension, containerID)
       this.canvas.width,
       this.canvas.height
     );
-    this.canvasContext.fillStyle = this.colorDotRed;
     for(var x = 0; x < this.dimension; x++)
       for(var y = 0; y < this.dimension+1; y++)
       {
@@ -633,19 +715,36 @@ function GameViewClass(dimension, containerID)
   }
 )();
 
-function main()
+var GameView7 = undefined;
+var GameView6 = undefined;
+var GameView5 = undefined;
+var GameView4 = undefined;
+var GameView3 = undefined;
+var GameView2 = undefined;
+
+function init()
 {
-  new GameViewClass(7, 'game_view_7');
-  new GameViewClass(6, 'game_view_6');
-  new GameViewClass(5, 'game_view_5');
-  new GameViewClass(4, 'game_view_4');
-  new GameViewClass(3, 'game_view_3');
-  new GameViewClass(2, 'game_view_2');
+  GameView7 = new GameViewClass(7, 'game_view_7');
+  GameView6 = new GameViewClass(6, 'game_view_6');
+  GameView5 = new GameViewClass(5, 'game_view_5');
+  GameView4 = new GameViewClass(4, 'game_view_4');
+  GameView3 = new GameViewClass(3, 'game_view_3');
+  GameView2 = new GameViewClass(2, 'game_view_2');
+}
+
+function blur()
+{
+  GameView7.clearProposal();
+  GameView6.clearProposal();
+  GameView5.clearProposal();
+  GameView4.clearProposal();
+  GameView3.clearProposal();
+  GameView2.clearProposal();
 }
       /*]]>*/
     </script>
   </head>
-  <body class="main" onload="main();">
+  <body class="body" onload="init();" onblur="blur();">
     Connect top red line with bottom red line if you play as first, or left blue line with right blue line if you play as second.
     <div class="overflow">
       <div class="left_div" id="game_view_7"></div>
