@@ -459,19 +459,7 @@ function GameViewClass(dimension, containerID)
 
   this.findBox = function(x, y)
   {
-    var box = this.findPeriodicBox
-    (
-      x,
-      y,
-      this.clickOffset,
-      this.clickOffset,
-      this.clickWidth,
-      this.clickWidth,
-      this.clickWidth,
-      this.clickWidth
-    );
-    if(box !== undefined)
-      return box;
+    var box;
     switch(this.game.next)
     {
       case this.game.FlagRed:
@@ -503,7 +491,6 @@ function GameViewClass(dimension, containerID)
           return { x: box.x*2+1, y: box.y*2+1 };
         break;
       case this.game.FlagBlue:
-      case this.game.FlagRed:
         box = this.findPeriodicBox
         (
           x,
@@ -532,8 +519,21 @@ function GameViewClass(dimension, containerID)
           return { x: box.x*2+1, y: box.y*2+1 };
         break;
     }
+    box = this.findPeriodicBox
+    (
+      x,
+      y,
+      this.clickOffset,
+      this.clickOffset,
+      this.clickWidth,
+      this.clickWidth,
+      this.clickWidth,
+      this.clickWidth
+    );
+    if(box !== undefined)
+      return box;
     return undefined;
-  }
+  };
 
   this.handleClick = function(x, y)
   {
