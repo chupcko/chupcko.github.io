@@ -386,6 +386,8 @@ function GameViewClass(dimension, containerID)
   this.boxProposal = undefined;
 
   this.colorBackgroud = 'rgb(100%, 100%, 100%)';
+  this.colorBackgroudRed = 'rgb(100%, 90%, 90%)';
+  this.colorBackgroudBlue = 'rgb(90%, 90%, 100%)';
   this.colorDotRed = 'rgb(100%, 0%, 0%)';
   this.colorDotBlue = 'rgb(0%, 0%, 100%)';
   this.colorLineRed = 'rgb(100%, 40%, 40%)';
@@ -396,10 +398,11 @@ function GameViewClass(dimension, containerID)
   this.lineWidth = 3;
   this.dotMargin = 2;
   this.dotWidth = this.dotMargin+this.lineWidth+this.dotMargin;
+  this.offset = this.dotWidth;
   this.lineLength = 5*this.dotWidth;
-  this.dotOffset = 3*this.dotWidth;
+  this.dotOffset = this.offset+3*this.dotWidth;
   this.clickWidth = 3*this.dotWidth;
-  this.clickOffset = 2*this.dotWidth;
+  this.clickOffset = this.offset+2*this.dotWidth;
   this.periodic = this.dotWidth+this.lineLength;
 
   this.clearProposal = function()
@@ -468,55 +471,55 @@ function GameViewClass(dimension, containerID)
           x,
           y,
           this.dotOffset,
-          this.dotWidth,
+          this.offset+this.dotWidth,
           this.dotWidth,
           this.lineLength,
-          this.dotWidth+this.lineLength,
-          this.dotWidth+this.lineLength
+          this.periodic,
+          this.periodic
         );
         if(box !== undefined)
-          return { x: box.x*2, y: box.y*2 };
+          return { x: 2*box.x, y: 2*box.y };
         box = this.findPeriodicBox
         (
           x,
           y,
           this.dotOffset+this.dotWidth,
-          this.dotWidth+this.lineLength,
+          this.offset+this.periodic,
           this.lineLength,
           this.dotWidth,
-          this.dotWidth+this.lineLength,
-          this.dotWidth+this.lineLength
+          this.periodic,
+          this.periodic
         );
         if(box !== undefined)
-          return { x: box.x*2+1, y: box.y*2+1 };
+          return { x: 2*box.x+1, y: 2*box.y+1 };
         break;
       case this.game.FlagBlue:
         box = this.findPeriodicBox
         (
           x,
           y,
-          this.dotWidth,
+          this.offset+this.dotWidth,
           this.dotOffset,
           this.lineLength,
           this.dotWidth,
-          this.dotWidth+this.lineLength,
-          this.dotWidth+this.lineLength
+          this.periodic,
+          this.periodic
         );
         if(box !== undefined)
-          return { x: box.x*2, y: box.y*2 };
+          return { x: 2*box.x, y: 2*box.y };
         box = this.findPeriodicBox
         (
           x,
           y,
-          this.dotWidth+this.lineLength,
+          this.offset+this.periodic,
           this.dotOffset+this.dotWidth,
           this.dotWidth,
           this.lineLength,
-          this.dotWidth+this.lineLength,
-          this.dotWidth+this.lineLength
+          this.periodic,
+          this.periodic
         );
         if(box !== undefined)
-          return { x: box.x*2+1, y: box.y*2+1 };
+          return { x: 2*box.x+1, y: 2*box.y+1 };
         break;
     }
     box = this.findPeriodicBox
@@ -620,7 +623,18 @@ function GameViewClass(dimension, containerID)
 
   this.draw = function()
   {
-    this.canvasContext.fillStyle = this.colorBackgroud;
+    switch(this.game.status)
+    {
+      case this.game.FlagEmpty:
+        this.canvasContext.fillStyle = this.colorBackgroud;
+        break;
+      case this.game.FlagRed:
+        this.canvasContext.fillStyle = this.colorBackgroudRed;
+        break;
+      case this.game.FlagBlue:
+        this.canvasContext.fillStyle = this.colorBackgroudBlue;
+        break;
+    }
     this.canvasContext.fillRect
     (
       0,
@@ -632,9 +646,21 @@ function GameViewClass(dimension, containerID)
       for(var y = 0; y < this.dimension+1; y++)
       {
         this.canvasContext.fillStyle = this.colorDotRed;
-        this.canvasContext.fillRect(this.dotOffset+x*this.periodic, y*this.periodic, this.dotWidth, this.dotWidth);
+        this.canvasContext.fillRect
+        (
+          this.dotOffset+x*this.periodic,
+          this.offset+y*this.periodic,
+          this.dotWidth,
+          this.dotWidth
+        );
         this.canvasContext.fillStyle = this.colorDotBlue;
-        this.canvasContext.fillRect(y*this.periodic, this.dotOffset+x*this.periodic, this.dotWidth, this.dotWidth);
+        this.canvasContext.fillRect
+        (
+          this.offset+y*this.periodic,
+          this.dotOffset+x*this.periodic,
+          this.dotWidth,
+          this.dotWidth
+        );
       }
     for(var x = 0; x < this.dimension-1; x++)
       for(var y = 0; y < this.dimension+1; y++)
@@ -642,22 +668,46 @@ function GameViewClass(dimension, containerID)
         if(this.game.haveRedHorizontal(x, y))
         {
           this.canvasContext.fillStyle = this.colorLineRed;
-          this.canvasContext.fillRect(this.dotOffset+x*this.periodic+this.dotWidth, y*this.periodic+this.dotMargin, this.lineLength, this.lineWidth);
+          this.canvasContext.fillRect
+          (
+            this.dotOffset+x*this.periodic+this.dotWidth,
+            this.offset+y*this.periodic+this.dotMargin,
+            this.lineLength,
+            this.lineWidth
+          );
         }
         else if(this.gameProposal !== undefined && this.gameProposal.haveRedHorizontal(x, y))
         {
           this.canvasContext.fillStyle = this.colorProposalRed;
-          this.canvasContext.fillRect(this.dotOffset+x*this.periodic+this.dotWidth, y*this.periodic+this.dotMargin, this.lineLength, this.lineWidth);
+          this.canvasContext.fillRect
+          (
+            this.dotOffset+x*this.periodic+this.dotWidth,
+            this.offset+y*this.periodic+this.dotMargin,
+            this.lineLength,
+            this.lineWidth
+          );
         }
         if(this.game.haveBlueVertical(y, x))
         {
           this.canvasContext.fillStyle = this.colorLineBlue;
-          this.canvasContext.fillRect(y*this.periodic+this.dotMargin, this.dotOffset+x*this.periodic+this.dotWidth, this.lineWidth, this.lineLength);
+          this.canvasContext.fillRect
+          (
+            this.offset+y*this.periodic+this.dotMargin,
+            this.dotOffset+x*this.periodic+this.dotWidth,
+            this.lineWidth,
+            this.lineLength
+          );
         }
         else if(this.gameProposal !== undefined && this.gameProposal.haveBlueVertical(y, x))
         {
           this.canvasContext.fillStyle = this.colorProposalBlue;
-          this.canvasContext.fillRect(y*this.periodic+this.dotMargin, this.dotOffset+x*this.periodic+this.dotWidth, this.lineWidth, this.lineLength);
+          this.canvasContext.fillRect
+          (
+            this.offset+y*this.periodic+this.dotMargin,
+            this.dotOffset+x*this.periodic+this.dotWidth,
+            this.lineWidth,
+            this.lineLength
+          );
         }
       }
     for(var x = 0; x < this.dimension; x++)
@@ -666,22 +716,46 @@ function GameViewClass(dimension, containerID)
         if(this.game.haveRedVertical(x, y))
         {
           this.canvasContext.fillStyle = this.colorLineRed;
-          this.canvasContext.fillRect(this.dotOffset+x*this.periodic+this.dotMargin, y*this.periodic+this.dotWidth, this.lineWidth, this.lineLength);
+          this.canvasContext.fillRect
+          (
+            this.dotOffset+x*this.periodic+this.dotMargin,
+            this.offset+y*this.periodic+this.dotWidth,
+            this.lineWidth,
+            this.lineLength
+          );
         }
         else if(this.gameProposal !== undefined && this.gameProposal.haveRedVertical(x, y))
         {
           this.canvasContext.fillStyle = this.colorProposalRed;
-          this.canvasContext.fillRect(this.dotOffset+x*this.periodic+this.dotMargin, y*this.periodic+this.dotWidth, this.lineWidth, this.lineLength);
+          this.canvasContext.fillRect
+          (
+            this.dotOffset+x*this.periodic+this.dotMargin,
+            this.offset+y*this.periodic+this.dotWidth,
+            this.lineWidth,
+            this.lineLength
+          );
         }
         if(this.game.haveBlueHorizontal(y, x))
         {
           this.canvasContext.fillStyle = this.colorLineBlue;
-          this.canvasContext.fillRect(y*this.periodic+this.dotWidth, this.dotOffset+x*this.periodic+this.dotMargin, this.lineLength, this.lineWidth);
+          this.canvasContext.fillRect
+          (
+            this.offset+y*this.periodic+this.dotWidth,
+            this.dotOffset+x*this.periodic+this.dotMargin,
+            this.lineLength,
+            this.lineWidth
+          );
         }
         else if(this.gameProposal !== undefined && this.gameProposal.haveBlueHorizontal(y, x))
         {
           this.canvasContext.fillStyle = this.colorProposalBlue;
-          this.canvasContext.fillRect(y*this.periodic+this.dotWidth, this.dotOffset+x*this.periodic+this.dotMargin, this.lineLength, this.lineWidth);
+          this.canvasContext.fillRect
+          (
+            this.offset+y*this.periodic+this.dotWidth,
+            this.dotOffset+x*this.periodic+this.dotMargin,
+            this.lineLength,
+            this.lineWidth
+          );
         }
       }
     document.getElementById(this.$name()+'_status').innerHTML = this.game.getStatusString();
