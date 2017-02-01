@@ -21,12 +21,12 @@
 
 .left_div
 {
-  float: left;
-  padding: 12px;
-  margin: 12px;
   border-color: rgb(0%, 0%, 0%);
   border-style: solid;
   border-width: 1px;
+  float: left;
+  margin: 12px;
+  padding: 12px;
 }
       /*]]>*/
     </style>
@@ -370,13 +370,13 @@ function GameClass(dimension, calculateConnections)
 
   this.new();
 }
-function GameViewClass(dimension, containerID)
+function GameViewClass(containerID, dimension)
 {
   if(dimension < 2)
     dimension = 2;
 
-  this.dimension = dimension;
   this.container = document.getElementById(containerID);
+  this.dimension = dimension;
 
   this.canvas = undefined;
   this.canvasContext = undefined;
@@ -538,16 +538,6 @@ function GameViewClass(dimension, containerID)
     return undefined;
   };
 
-  this.handleClick = function(x, y)
-  {
-    var box = this.findBox(x, y);
-    if(box !== undefined)
-    {
-      this.game.play(box.x, box.y)
-      this.draw();
-    }
-  };
-
   this.handleMove = function(x, y)
   {
     var box = this.findBox(x, y);
@@ -576,25 +566,35 @@ function GameViewClass(dimension, containerID)
         this.clearProposal();
   };
 
+  this.handleClick = function(x, y)
+  {
+    var box = this.findBox(x, y);
+    if(box !== undefined)
+    {
+      this.game.play(box.x, box.y)
+      this.draw();
+    }
+  };
+
   this.init = function()
   {
     this.container.innerHTML =
       '<button onclick="'+this.$name()+'.new();">New</button><p/>'+
       '<span id="'+this.$name()+'_status"></span><p/>'+
-      '<canvas id="'+this.$name()+'_canvas"></canvas><p/>'+
+      '<canvas id="'+this.$name()+'_canvas" onmouseout="'+this.$name()+'.clearProposal();"></canvas><p/>'+
       '<button onclick="'+this.$name()+'.beatMe();">Beat me</button>';
     this.canvas = document.getElementById(this.$name()+'_canvas');
     this.canvasContext = this.canvas.getContext('2d');
     this.canvas.addEventListener
     (
-      'click',
+      'mouseover',
       (
         function(that)
         {
           return function(event)
           {
             var point = that.eventPoint(event);
-            that.handleClick(point.x, point.y);
+            that.handleMove(point.x, point.y);
             return false;
           };
         }
@@ -611,6 +611,22 @@ function GameViewClass(dimension, containerID)
           {
             var point = that.eventPoint(event);
             that.handleMove(point.x, point.y);
+            return false;
+          };
+        }
+      )(this),
+      false
+    );
+    this.canvas.addEventListener
+    (
+      'click',
+      (
+        function(that)
+        {
+          return function(event)
+          {
+            var point = that.eventPoint(event);
+            that.handleClick(point.x, point.y);
             return false;
           };
         }
@@ -789,36 +805,19 @@ function GameViewClass(dimension, containerID)
   }
 )();
 
-var GameView7 = undefined;
-var GameView6 = undefined;
-var GameView5 = undefined;
-var GameView4 = undefined;
-var GameView3 = undefined;
-var GameView2 = undefined;
-
 function init()
 {
-  GameView7 = new GameViewClass(7, 'game_view_7');
-  GameView6 = new GameViewClass(6, 'game_view_6');
-  GameView5 = new GameViewClass(5, 'game_view_5');
-  GameView4 = new GameViewClass(4, 'game_view_4');
-  GameView3 = new GameViewClass(3, 'game_view_3');
-  GameView2 = new GameViewClass(2, 'game_view_2');
-}
-
-function blur()
-{
-  GameView7.clearProposal();
-  GameView6.clearProposal();
-  GameView5.clearProposal();
-  GameView4.clearProposal();
-  GameView3.clearProposal();
-  GameView2.clearProposal();
+  new GameViewClass('game_view_7', 7);
+  new GameViewClass('game_view_6', 6);
+  new GameViewClass('game_view_5', 5);
+  new GameViewClass('game_view_4', 4);
+  new GameViewClass('game_view_3', 3);
+  new GameViewClass('game_view_2', 2);
 }
       /*]]>*/
     </script>
   </head>
-  <body class="body" onload="init();" onblur="blur();">
+  <body class="body" onload="init();">
     Connect top red line with bottom red line if you play as first, or left blue line with right blue line if you play as second.
     <div class="overflow">
       <div class="left_div" id="game_view_7"></div>
