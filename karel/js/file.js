@@ -11,9 +11,14 @@ function FileClass(status, programID, world, machine, compiler, worldView, machi
   this.load = function(files, callback)
   {
     this.status.clear();
-    if(files.length != 1)
+    if(files.length < 1)
     {
       this.status.setError('First select file');
+      return;
+    }
+    if(files.length > 1)
+    {
+      this.status.setError('Select only one file');
       return;
     }
     var reader = new FileReader();
@@ -47,7 +52,7 @@ function FileClass(status, programID, world, machine, compiler, worldView, machi
   this.save = function(name, content)
   {
     this.status.clear();
-    var blob= new Blob([content], {type:'text/plain'});
+    var blob = new Blob([ content ], { type: 'text/plain' });
     var download = document.createElement('a');
     download.download = name;
     download.innerHTML = '';
@@ -128,8 +133,10 @@ function FileClass(status, programID, world, machine, compiler, worldView, machi
         var result = that.world.load(data);
         if(result !== true)
           return 'Bad world file format: '+result;
-        that.worldView.initCanvas();
-        that.worldView.draw();
+        that.worldView.set();
+        that.worldView.drawWalls();
+        that.worldView.drawWorld();
+        that.worldView.drawController();
         return true;
       }
     }

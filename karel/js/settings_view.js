@@ -9,7 +9,7 @@ function SettingsViewClass(settings, containerID)
   this.init = function()
   {
     this.container.innerHTML =
-      '<table class="border_collapse"><tr>'+
+      '<table style="border-collapse: collapse;"><tr>'+
       '<td>Status timer in milli seconds ( &ge; '+this.statusTimerMilliSecondsMin+' ):</td><td>'+
       '<input type="text" id="'+this.$name()+'_timer_milli_seconds" class="settings_view_input" onchange="'+this.$name()+'.setStatusTimerMilliSeconds();"/>'+
       '<button type="button" class="settings_view_button" onclick="'+this.$name()+'.setStatusTimerMilliSeconds();">Set</button>'+

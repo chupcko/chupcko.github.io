@@ -29,14 +29,24 @@ function WorldViewClass(status, world, containerID)
   this.fieldsWidth = undefined;
   this.fieldsHeight = undefined;
 
-  this.canvas = undefined;
-  this.canvasContext = undefined;
+  this.canvasBackground = undefined;
+  this.canvasBackgroundContext = undefined;
+  this.canvasScene = undefined;
+  this.canvasSceneContext = undefined;
+  this.canvasWalls = undefined;
+  this.canvasWallsContext = undefined;
+  this.canvasWorld = undefined;
+  this.canvasWorldContext = undefined;
 
   this.init = function()
   {
     this.container.innerHTML =
-      '<div class="overflow"><div class="left_div"><canvas id="'+this.$name()+'_canvas"></canvas></div><div class="left_div">'+
-      '<table class="border_collapse"><tr>'+
+      '<div style="overflow: auto;"><div class="left_div"><div id="'+this.$name()+'_div">'+
+      '<canvas style="position: absolute; z-index: 0;" id="'+this.$name()+'_canvas_background"></canvas>'+
+      '<canvas style="position: absolute; z-index: 1;" id="'+this.$name()+'_canvas_scene"></canvas>'+
+      '<canvas style="position: absolute; z-index: 2;" id="'+this.$name()+'_canvas_walls"></canvas>'+
+      '<canvas style="position: absolute; z-index: 3;" id="'+this.$name()+'_canvas_world"></canvas>'+
+      '</div></div><div class="left_div"><table style="border-collapse: collapse;"><tr>'+
       '<td class="world_view_info">NORTH: <span id="'+this.$name()+'_north" class="world_view_test"></span></td>'+
       '<td class="world_view_info">WALL: <span id="'+this.$name()+'_wall" class="world_view_test"></span></td>'+
       '<td class="world_view_info">HAVE: <span id="'+this.$name()+'_have" class="world_view_test"></span></td>'+
@@ -71,9 +81,16 @@ function WorldViewClass(status, world, containerID)
       '<button type="button" onclick="'+this.$name()+'.storeWorld();">Store world to memory</button>&nbsp;&nbsp;'+
       '<button type="button" onclick="'+this.$name()+'.restoreWorld();">Restore world from memory</button>'+
       '</div>';
-    this.canvas = document.getElementById(this.$name()+'_canvas');
-    this.canvasContext = this.canvas.getContext('2d');
-    this.canvas.addEventListener
+
+    this.canvasBackground = document.getElementById(this.$name()+'_canvas_background');
+    this.canvasBackgroundContext = this.canvasBackground.getContext('2d');
+    this.canvasScene = document.getElementById(this.$name()+'_canvas_scene');
+    this.canvasSceneContext = this.canvasScene.getContext('2d');
+    this.canvasWalls = document.getElementById(this.$name()+'_canvas_walls');
+    this.canvasWallsContext = this.canvasWalls.getContext('2d');
+    this.canvasWorld = document.getElementById(this.$name()+'_canvas_world');
+    this.canvasWorldContext = this.canvasWorld.getContext('2d');
+    this.canvasWorld.addEventListener
     (
       'click',
       (
@@ -82,14 +99,14 @@ function WorldViewClass(status, world, containerID)
           return function(event)
           {
             var point = that.clickPoint(event);
-            that.handleClick(point.x, that.canvas.height-1-point.y, 'left');
+            that.handleClick(point.x, that.canvasWorld.height-1-point.y, 'left');
             return false;
           };
         }
       )(this),
       false
     );
-    this.canvas.addEventListener
+    this.canvasWorld.addEventListener
     (
       'contextmenu',
       (
@@ -98,7 +115,7 @@ function WorldViewClass(status, world, containerID)
           return function(event)
           {
             var point = that.clickPoint(event);
-            that.handleClick(point.x, that.canvas.height-1-point.y, 'right');
+            that.handleClick(point.x, that.canvasWorld.height-1-point.y, 'right');
             event.preventDefault();
             return false;
           };
@@ -106,7 +123,7 @@ function WorldViewClass(status, world, containerID)
       )(this),
       false
     );
-    this.canvas.addEventListener
+    this.canvasWorld.addEventListener
     (
       'wheel',
       (
@@ -116,9 +133,9 @@ function WorldViewClass(status, world, containerID)
           {
             var point = that.clickPoint(event);
             if(event.deltaY < 0)
-              that.handleClick(point.x, that.canvas.height-1-point.y, 'wheelUp');
+              that.handleClick(point.x, that.canvasWorld.height-1-point.y, 'wheelUp');
             else if(event.deltaY > 0)
-              that.handleClick(point.x, that.canvas.height-1-point.y, 'wheelDown');
+              that.handleClick(point.x, that.canvasWorld.height-1-point.y, 'wheelDown');
             event.preventDefault();
             return false;
           };
@@ -126,7 +143,7 @@ function WorldViewClass(status, world, containerID)
       )(this),
       false
     );
-    this.canvas.addEventListener
+    this.canvasWorld.addEventListener
     (
       'dblclick',
       (
@@ -135,7 +152,7 @@ function WorldViewClass(status, world, containerID)
           return function(event)
           {
             var point = that.clickPoint(event);
-            that.handleClick(point.x, that.canvas.height-1-point.y, 'double');
+            that.handleClick(point.x, that.canvasWorld.height-1-point.y, 'double');
             event.preventDefault();
             return false;
           };
@@ -143,22 +160,41 @@ function WorldViewClass(status, world, containerID)
       )(this),
       false
     );
+    this.set();
   };
 
-  this.initCanvas = function()
+  this.set = function()
   {
     this.selectedX = 0;
     this.selectedY = 0;
     this.fieldsWidth = this.wallAddendum+this.world.dimensionX*this.periodicSize+this.lineWidth+this.wallAddendum;
     this.fieldsHeight = this.wallAddendum+this.world.dimensionY*this.periodicSize+this.lineWidth+this.wallAddendum;
-    this.canvas.width = this.fieldsWidth;
-    this.canvas.height = this.fieldsHeight;
+    var div = document.getElementById(this.$name()+'_div');
+    div.style.width = this.fieldsWidth+'px';
+    div.style.height = this.fieldsHeight+'px';
+    this.canvasBackground.width = this.fieldsWidth;
+    this.canvasBackground.height = this.fieldsHeight;
+    this.canvasBackgroundContext.setTransform(1, 0, 0, -1, 0, this.fieldsHeight);
+    this.canvasScene.width = this.fieldsWidth;
+    this.canvasScene.height = this.fieldsHeight;
+    this.canvasSceneContext.setTransform(1, 0, 0, -1, 0, this.fieldsHeight);
+    this.canvasWalls.width = this.fieldsWidth;
+    this.canvasWalls.height = this.fieldsHeight;
+    this.canvasWallsContext.setTransform(1, 0, 0, -1, 0, this.fieldsHeight);
+    this.canvasWorld.width = this.fieldsWidth;
+    this.canvasWorld.height = this.fieldsHeight;
+    this.canvasWorldContext.setTransform(1, 0, 0, -1, 0, this.fieldsHeight);
+    this.drawBackground();
+    this.drawBorder();
+    this.drawLines();
+    this.drawMarkers();
+    this.drawController();
   };
 
   this.clickPoint = function(event)
   {
-    var x = undefined;
-    var y = undefined;
+    var x;
+    var y;
     if
     (
       event.pageX !== undefined &&
@@ -173,15 +209,13 @@ function WorldViewClass(status, world, containerID)
       x = event.clientX+document.body.scrollLeft+document.documentElement.scrollLeft;
       y = event.clientY+document.body.scrollTop+document.documentElement.scrollTop;
     }
-    x -= this.canvas.offsetLeft;
-    y -= this.canvas.offsetTop;
     return {
-      x: x,
-      y: y
+      x: x-this.canvasWorld.offsetLeft,
+      y: y-this.canvasWorld.offsetTop
     };
   };
 
-  this.findClickBox = function(x, y, offsetX, offsetY, sizeX, sizeY, periodicX, periodicY)
+  this.findPeriodicBox = function(x, y, offsetX, offsetY, sizeX, sizeY, periodicX, periodicY)
   {
     if
     (
@@ -209,8 +243,7 @@ function WorldViewClass(status, world, containerID)
 
   this.handleClick = function(x, y, type)
   {
-    var box;
-    var box = this.findClickBox
+    var box = this.findPeriodicBox
     (
       x,
       y,
@@ -224,9 +257,10 @@ function WorldViewClass(status, world, containerID)
     if(box !== undefined)
     {
       this.world.toggleWallOnNorth(box.x, box.y);
-      this.draw();
+      this.toggleWallOnNorth(box.x, box.y);
+      this.drawController();
     }
-    box = this.findClickBox
+    box = this.findPeriodicBox
     (
       x,
       y,
@@ -240,9 +274,10 @@ function WorldViewClass(status, world, containerID)
     if(box !== undefined)
     {
       this.world.toggleWallOnEast(box.x, box.y);
-      this.draw();
+      this.toggleWallOnEast(box.x, box.y);
+      this.drawController();
     }
-    box = this.findClickBox
+    box = this.findPeriodicBox
     (
       x,
       y,
@@ -260,12 +295,14 @@ function WorldViewClass(status, world, containerID)
         case 'left':
           this.selectedX = box.x;
           this.selectedY = box.y;
+          this.drawBackground();
           break;
         case 'right':
           if(this.boxIsKarel(box))
             this.world.doLeft();
           else
             this.world.setKarelPosition(box.x, box.y);
+          this.drawWorld();
           break;
         case 'wheelDown':
           if(this.boxIsKarel(box))
@@ -278,7 +315,9 @@ function WorldViewClass(status, world, containerID)
             this.selectedX = box.x;
             this.selectedY = box.y;
             this.world.decrementBeepersNumber(box.x, box.y);
+            this.drawBackground();
           }
+          this.drawWorld();
           break;
         case 'wheelUp':
           if(this.boxIsKarel(box))
@@ -291,7 +330,9 @@ function WorldViewClass(status, world, containerID)
             this.selectedX = box.x;
             this.selectedY = box.y;
             this.world.incrementBeepersNumber(box.x, box.y);
+            this.drawBackground();
           }
+          this.drawWorld();
           break;
         case 'double':
           this.selectedX = box.x;
@@ -301,10 +342,143 @@ function WorldViewClass(status, world, containerID)
           else
             if(this.boxIsKarel(box))
               this.world.setKarelBeepersNumber(0)
+          this.drawBackground();
+          this.drawWorld();
           break;
       }
-      this.draw();
+      this.drawController();
     }
+  };
+
+  this.drawBackground = function()
+  {
+    this.canvasBackgroundContext.fillStyle = this.colorBackground;
+    this.canvasBackgroundContext.fillRect
+    (
+      0,
+      0,
+      this.fieldsWidth,
+      this.fieldsHeight
+    );
+    this.canvasBackgroundContext.fillStyle = this.colorSelectedBackground;
+    this.canvasBackgroundContext.fillRect
+    (
+      this.wallAddendum+this.selectedX*this.periodicSize+this.lineWidth,
+      this.wallAddendum+this.selectedY*this.periodicSize+this.lineWidth,
+      this.fieldSize,
+      this.fieldSize
+    );
+  };
+
+  this.drawBorder = function()
+  {
+    this.canvasSceneContext.fillStyle = this.colorWall;
+    this.canvasSceneContext.fillRect
+    (
+      0,
+      0,
+      this.fieldsWidth,
+      this.wallWidth
+    );
+    this.canvasSceneContext.fillRect
+    (
+      0,
+      this.fieldsHeight-this.wallWidth,
+      this.fieldsWidth,
+      this.wallWidth
+    );
+    this.canvasSceneContext.fillRect
+    (
+      0,
+      this.wallWidth,
+      this.wallWidth,
+      this.fieldsHeight-2*this.wallWidth
+    );
+    this.canvasSceneContext.fillRect
+    (
+      this.fieldsWidth-this.wallWidth,
+      this.wallWidth,
+      this.wallWidth,
+      this.fieldsHeight-2*this.wallWidth
+    );
+  };
+
+  this.drawLines = function()
+  {
+    this.canvasSceneContext.fillStyle = this.colorLine;
+    for(var x = 0; x < this.world.dimensionX-1; x++)
+      this.canvasSceneContext.fillRect
+      (
+        this.wallAddendum+(x+1)*this.periodicSize,
+        this.wallWidth,
+        this.lineWidth,
+        this.fieldsHeight-2*this.wallWidth
+      );
+    for(var y = 0; y < this.world.dimensionY-1; y++)
+      this.canvasSceneContext.fillRect
+      (
+        this.wallWidth,
+        this.wallAddendum+(y+1)*this.periodicSize,
+        this.fieldsWidth-2*this.wallWidth,
+        this.lineWidth
+      );
+  };
+
+  this.drawMarkers = function()
+  {
+    this.canvasSceneContext.fillStyle = this.colorMarker;
+    for(var x = 0; x < this.world.dimensionX-1; x++)
+    {
+      this.canvasSceneContext.fillRect
+      (
+        this.wallAddendum+(x+1)*this.periodicSize-this.lineWidth,
+        this.wallWidth,
+        this.wallWidth,
+        this.markerOutlet
+      );
+      this.canvasSceneContext.fillRect
+      (
+        this.wallAddendum+(x+1)*this.periodicSize-this.lineWidth,
+        this.fieldsHeight-this.wallWidth-this.markerOutlet,
+        this.wallWidth,
+        this.markerOutlet
+      );
+    }
+    for(var y = 0; y < this.world.dimensionY-1; y++)
+    {
+      this.canvasSceneContext.fillRect
+      (
+        this.wallWidth,
+        this.wallAddendum+(y+1)*this.periodicSize-this.lineWidth,
+        this.markerOutlet,
+        this.wallWidth
+      );
+      this.canvasSceneContext.fillRect
+      (
+        this.fieldsWidth-this.wallWidth-this.markerOutlet,
+        this.wallAddendum+(y+1)*this.periodicSize-this.lineWidth,
+        this.markerOutlet,
+        this.wallWidth
+      );
+    }
+    for(var x = 0; x < this.world.dimensionX-1; x++)
+      for(var y = 0; y < this.world.dimensionY-1; y++)
+      {
+        this.canvasSceneContext.fillRect
+        (
+          (x+1)*this.periodicSize,
+          (y+1)*this.periodicSize-this.markerOutlet,
+          this.wallWidth,
+          this.wallWidth+2*this.markerOutlet
+        );
+        this.canvasSceneContext.fillRect
+        (
+          (x+1)*this.periodicSize-this.markerOutlet,
+          (y+1)*this.periodicSize,
+          this.wallWidth+2*this.markerOutlet,
+          this.wallWidth
+        );
+      }
   };
 
   this.drawController = function()
@@ -323,137 +497,10 @@ function WorldViewClass(status, world, containerID)
     document.getElementById(this.$name()+'_dimensionY').value = this.world.dimensionY;
   };
 
-  this.drawCanvasSelected = function()
+  this.drawWallOnNorth = function(x, y)
   {
-    this.canvasContext.fillStyle = this.colorSelectedBackground;
-    this.canvasContext.fillRect
-    (
-      this.wallAddendum+this.selectedX*this.periodicSize+this.lineWidth,
-      this.wallAddendum+this.selectedY*this.periodicSize+this.lineWidth,
-      this.fieldSize,
-      this.fieldSize
-    );
-  };
-
-  this.drawCanvasBorder = function()
-  {
-    this.canvasContext.fillStyle = this.colorWall;
-    this.canvasContext.fillRect
-    (
-      0,
-      0,
-      this.fieldsWidth,
-      this.wallWidth
-    );
-    this.canvasContext.fillRect
-    (
-      0,
-      this.fieldsHeight-this.wallWidth,
-      this.fieldsWidth,
-      this.wallWidth
-    );
-    this.canvasContext.fillRect
-    (
-      0,
-      this.wallWidth,
-      this.wallWidth,
-      this.fieldsHeight-2*this.wallWidth
-    );
-    this.canvasContext.fillRect
-    (
-      this.fieldsWidth-this.wallWidth,
-      this.wallWidth,
-      this.wallWidth,
-      this.fieldsHeight-2*this.wallWidth
-    );
-  };
-
-  this.drawCanvasLines = function()
-  {
-    this.canvasContext.fillStyle = this.colorLine;
-    for(var x = 0; x < this.world.dimensionX-1; x++)
-      this.canvasContext.fillRect
-      (
-        this.wallAddendum+(x+1)*this.periodicSize,
-        this.wallWidth,
-        this.lineWidth,
-        this.fieldsHeight-2*this.wallWidth
-      );
-    for(var y = 0; y < this.world.dimensionY-1; y++)
-      this.canvasContext.fillRect
-      (
-        this.wallWidth,
-        this.wallAddendum+(y+1)*this.periodicSize,
-        this.fieldsWidth-2*this.wallWidth,
-        this.lineWidth
-      );
-  };
-
-  this.drawCanvasMarker = function(x, y)
-  {
-    this.canvasContext.fillStyle = this.colorMarker;
-    this.canvasContext.fillRect
-    (
-      (x+1)*this.periodicSize,
-      (y+1)*this.periodicSize-this.markerOutlet,
-      this.wallWidth,
-      this.wallWidth+2*this.markerOutlet
-    );
-    this.canvasContext.fillRect
-    (
-      (x+1)*this.periodicSize-this.markerOutlet,
-      (y+1)*this.periodicSize,
-      this.wallWidth+2*this.markerOutlet,
-      this.wallWidth
-    );
-  }
-
-  this.drawCanvasMarkers = function()
-  {
-    this.canvasContext.fillStyle = this.colorMarker;
-    for(var x = 0; x < this.world.dimensionX-1; x++)
-    {
-      this.canvasContext.fillRect
-      (
-        this.wallAddendum+(x+1)*this.periodicSize-this.lineWidth,
-        this.wallWidth,
-        this.wallWidth,
-        this.markerOutlet
-      );
-      this.canvasContext.fillRect
-      (
-        this.wallAddendum+(x+1)*this.periodicSize-this.lineWidth,
-        this.fieldsHeight-this.wallWidth-this.markerOutlet,
-        this.wallWidth,
-        this.markerOutlet
-      );
-    }
-    for(var y = 0; y < this.world.dimensionY-1; y++)
-    {
-      this.canvasContext.fillRect
-      (
-        this.wallWidth,
-        this.wallAddendum+(y+1)*this.periodicSize-this.lineWidth,
-        this.markerOutlet,
-        this.wallWidth
-      );
-      this.canvasContext.fillRect
-      (
-        this.fieldsWidth-this.wallWidth-this.markerOutlet,
-        this.wallAddendum+(y+1)*this.periodicSize-this.lineWidth,
-        this.markerOutlet,
-        this.wallWidth
-      );
-    }
-    for(var x = 0; x < this.world.dimensionX-1; x++)
-      for(var y = 0; y < this.world.dimensionY-1; y++)
-        this.drawCanvasMarker(x, y);
-  };
-
-  this.drawCanvasNorthWall = function(x, y)
-  {
-    this.canvasContext.fillStyle = this.colorWall;
-    this.canvasContext.fillRect
+    this.canvasWallsContext.fillStyle = this.colorWall;
+    this.canvasWallsContext.fillRect
     (
       this.wallAddendum+x*this.periodicSize+this.lineWidth+this.wallAddendum+this.markerOutlet,
       this.wallAddendum+(y+1)*this.periodicSize-this.lineWidth,
@@ -462,10 +509,10 @@ function WorldViewClass(status, world, containerID)
     );
   };
 
-  this.drawCanvasEastWall = function(x, y)
+  this.drawWallOnEast = function(x, y)
   {
-    this.canvasContext.fillStyle = this.colorWall;
-    this.canvasContext.fillRect
+    this.canvasWallsContext.fillStyle = this.colorWall;
+    this.canvasWallsContext.fillRect
     (
       this.wallAddendum+(x+1)*this.periodicSize-this.lineWidth,
       this.wallAddendum+y*this.periodicSize+this.lineWidth+this.wallAddendum+this.markerOutlet,
@@ -474,15 +521,62 @@ function WorldViewClass(status, world, containerID)
     );
   };
 
+  this.toggleWallOnNorth = function(x, y)
+  {
+    if(this.world.isWallOnNorth(x, y))
+      this.drawWallOnNorth(x, y);
+    else
+      this.canvasWallsContext.clearRect
+      (
+        this.wallAddendum+x*this.periodicSize+this.lineWidth+this.wallAddendum+this.markerOutlet,
+        this.wallAddendum+(y+1)*this.periodicSize-this.lineWidth,
+        this.fieldSize-2*(this.wallAddendum+this.markerOutlet),
+        this.wallWidth
+      );
+  };
+
+  this.toggleWallOnEast = function(x, y)
+  {
+    if(this.world.isWallOnEast(x, y))
+      this.drawWallOnEast(x, y);
+    else
+      this.canvasWallsContext.clearRect
+      (
+        this.wallAddendum+(x+1)*this.periodicSize-this.lineWidth,
+        this.wallAddendum+y*this.periodicSize+this.lineWidth+this.wallAddendum+this.markerOutlet,
+        this.wallWidth,
+        this.fieldSize-2*(this.wallAddendum+this.markerOutlet)
+      );
+  };
+
+  this.drawWalls = function()
+  {
+    this.canvasWallsContext.clearRect
+    (
+      0,
+      0,
+      this.fieldsWidth,
+      this.fieldsHeight
+    );
+    for(var x = 0; x < this.world.dimensionX; x++)
+      for(var y = 0; y < this.world.dimensionY-1; y++)
+        if(this.world.isWallOnNorth(x, y))
+          this.drawWallOnNorth(x, y);
+    for(var x = 0; x < this.world.dimensionX-1; x++)
+      for(var y = 0; y < this.world.dimensionY; y++)
+        if(this.world.isWallOnEast(x, y))
+          this.drawWallOnEast(x, y);
+  };
+
   this.beeperColor = function(beepers)
   {
     return 'hsl(0, 100%, '+Math.max(76-beepers, 50)+'%)';
   };
 
-  this.drawCanvasBeeper = function(x, y, beepers)
+  this.drawBeeper = function(x, y, beepers)
   {
-    this.canvasContext.fillStyle = this.beeperColor(beepers);
-    this.canvasContext.fillRect
+    this.canvasWorldContext.fillStyle = this.beeperColor(beepers);
+    this.canvasWorldContext.fillRect
     (
       this.wallAddendum+x*this.periodicSize+this.lineWidth+this.wallAddendum+this.markerOutlet,
       this.wallAddendum+y*this.periodicSize+this.lineWidth+this.wallAddendum+this.markerOutlet,
@@ -491,91 +585,81 @@ function WorldViewClass(status, world, containerID)
     );
   };
 
-  this.drawCanvasKarel = function()
+  this.drawKarel = function()
   {
     var centerX = this.wallAddendum+this.world.karelX*this.periodicSize+this.lineWidth+((this.fieldSize/2)|0);
     var centerY = this.wallAddendum+this.world.karelY*this.periodicSize+this.lineWidth+((this.fieldSize/2)|0);
-    this.canvasContext.beginPath();
+    this.canvasWorldContext.beginPath();
     switch(this.world.karelDirection)
     {
       case this.world.DirectionNorth:
-        this.canvasContext.moveTo(centerX+0.5, centerY+this.karelUnitRate*this.karelUnitSize+0.5);
-        this.canvasContext.lineTo(centerX+this.karelUnitSize+0.5, centerY-this.karelUnitRate*this.karelUnitSize+0.5);
-        this.canvasContext.lineTo(centerX-this.karelUnitSize+0.5, centerY-this.karelUnitRate*this.karelUnitSize+0.5);
+        this.canvasWorldContext.moveTo(centerX+0.5, centerY+this.karelUnitRate*this.karelUnitSize+0.5);
+        this.canvasWorldContext.lineTo(centerX+this.karelUnitSize+0.5, centerY-this.karelUnitRate*this.karelUnitSize+0.5);
+        this.canvasWorldContext.lineTo(centerX-this.karelUnitSize+0.5, centerY-this.karelUnitRate*this.karelUnitSize+0.5);
         break;
       case this.world.DirectionWest:
-        this.canvasContext.moveTo(centerX-this.karelUnitRate*this.karelUnitSize+0.5, centerY+0.5);
-        this.canvasContext.lineTo(centerX+this.karelUnitRate*this.karelUnitSize+0.5, centerY+this.karelUnitSize+0.5);
-        this.canvasContext.lineTo(centerX+this.karelUnitRate*this.karelUnitSize+0.5, centerY-this.karelUnitSize+0.5);
+        this.canvasWorldContext.moveTo(centerX-this.karelUnitRate*this.karelUnitSize+0.5, centerY+0.5);
+        this.canvasWorldContext.lineTo(centerX+this.karelUnitRate*this.karelUnitSize+0.5, centerY+this.karelUnitSize+0.5);
+        this.canvasWorldContext.lineTo(centerX+this.karelUnitRate*this.karelUnitSize+0.5, centerY-this.karelUnitSize+0.5);
         break;
       case this.world.DirectionSouth:
-        this.canvasContext.moveTo(centerX+0.5, centerY-this.karelUnitRate*this.karelUnitSize+0.5);
-        this.canvasContext.lineTo(centerX+this.karelUnitSize+0.5, centerY+this.karelUnitRate*this.karelUnitSize+0.5);
-        this.canvasContext.lineTo(centerX-this.karelUnitSize+0.5, centerY+this.karelUnitRate*this.karelUnitSize+0.5);
+        this.canvasWorldContext.moveTo(centerX+0.5, centerY-this.karelUnitRate*this.karelUnitSize+0.5);
+        this.canvasWorldContext.lineTo(centerX+this.karelUnitSize+0.5, centerY+this.karelUnitRate*this.karelUnitSize+0.5);
+        this.canvasWorldContext.lineTo(centerX-this.karelUnitSize+0.5, centerY+this.karelUnitRate*this.karelUnitSize+0.5);
         break;
       case this.world.DirectionEast:
-        this.canvasContext.moveTo(centerX+this.karelUnitRate*this.karelUnitSize+0.5, centerY+0.5);
-        this.canvasContext.lineTo(centerX-this.karelUnitRate*this.karelUnitSize+0.5, centerY+this.karelUnitSize+0.5);
-        this.canvasContext.lineTo(centerX-this.karelUnitRate*this.karelUnitSize+0.5, centerY-this.karelUnitSize+0.5);
+        this.canvasWorldContext.moveTo(centerX+this.karelUnitRate*this.karelUnitSize+0.5, centerY+0.5);
+        this.canvasWorldContext.lineTo(centerX-this.karelUnitRate*this.karelUnitSize+0.5, centerY+this.karelUnitSize+0.5);
+        this.canvasWorldContext.lineTo(centerX-this.karelUnitRate*this.karelUnitSize+0.5, centerY-this.karelUnitSize+0.5);
         break;
     }
-    this.canvasContext.closePath();
+    this.canvasWorldContext.closePath();
     if(this.world.karelBeepersNumber > 0)
-      this.canvasContext.fillStyle = this.beeperColor(this.world.karelBeepersNumber);
+      this.canvasWorldContext.fillStyle = this.beeperColor(this.world.karelBeepersNumber);
     else
-      this.canvasContext.fillStyle = this.colorBackground;
-    this.canvasContext.fill();
-    this.canvasContext.strokeStyle = this.colorKarel;
-    this.canvasContext.lineWidth = this.karelLineWidth;
-    this.canvasContext.lineJoin = 'bevel';
-    this.canvasContext.stroke();
+      this.canvasWorldContext.fillStyle = this.colorBackground;
+    this.canvasWorldContext.fill();
+    this.canvasWorldContext.strokeStyle = this.colorKarel;
+    this.canvasWorldContext.lineWidth = this.karelLineWidth;
+    this.canvasWorldContext.lineJoin = 'bevel';
+    this.canvasWorldContext.stroke();
   };
 
-  this.drawCanvas = function()
+  this.drawWorld = function()
   {
-    this.canvasContext.setTransform(1, 0, 0, -1, 0, this.canvas.height);
-    this.canvasContext.fillStyle = this.colorBackground;
-    this.canvasContext.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    this.drawCanvasSelected();
-    this.drawCanvasBorder();
-    this.drawCanvasLines();
-    this.drawCanvasMarkers();
-    for(var x = 0; x < this.world.dimensionX; x++)
-      for(var y = 0; y < this.world.dimensionY-1; y++)
-        if(this.world.isWallOnNorth(x, y))
-          this.drawCanvasNorthWall(x, y);
-    for(var x = 0; x < this.world.dimensionX-1; x++)
-      for(var y = 0; y < this.world.dimensionY; y++)
-        if(this.world.isWallOnEast(x, y))
-          this.drawCanvasEastWall(x, y);
+    this.canvasWorldContext.clearRect
+    (
+      0,
+      0,
+      this.fieldsWidth,
+      this.fieldsHeight
+    );
     for(var x = 0; x < this.world.dimensionX; x++)
       for(var y = 0; y < this.world.dimensionY; y++)
       {
         var beepers = this.world.getBeepersNumber(x, y);
         if(beepers > 0)
-          this.drawCanvasBeeper(x, y, beepers);
+          this.drawBeeper(x, y, beepers);
       }
-    this.drawCanvasKarel();
-  };
-
-  this.draw = function()
-  {
-    this.drawCanvas();
-    this.drawController();
+    this.drawKarel();
   };
 
   this.doLeft = function()
   {
     this.status.clear();
     this.world.doLeft();
-    this.draw();
+    this.drawWorld();
+    this.drawController();
   };
 
   this.doMove = function()
   {
     this.status.clear();
     if(this.world.doMove())
-      this.draw();
+    {
+      this.drawWorld();
+      this.drawController();
+    }
     else
       this.status.setError('Cannot do MOVE');
   };
@@ -584,7 +668,10 @@ function WorldViewClass(status, world, containerID)
   {
     this.status.clear();
     if(this.world.doPut())
-      this.draw();
+    {
+      this.drawWorld();
+      this.drawController();
+    }
     else
       this.status.setError('Cannot do PUT');
   };
@@ -593,7 +680,10 @@ function WorldViewClass(status, world, containerID)
   {
     this.status.clear();
     if(this.world.doTake())
-      this.draw();
+    {
+      this.drawWorld();
+      this.drawController();
+    }
     else
       this.status.setError('Cannot do TAKE');
   };
@@ -602,7 +692,8 @@ function WorldViewClass(status, world, containerID)
   {
     this.selectedX = this.world.karelX;
     this.selectedY = this.world.karelY;
-    this.draw();
+    this.drawBackground();
+    this.drawController();
   };
 
   this.selectedBeepersSet = function()
@@ -611,31 +702,36 @@ function WorldViewClass(status, world, containerID)
     if(number < 0)
       number = 0;
     this.world.setBeepersNumber(this.selectedX, this.selectedY, number);
-    this.draw();
+    this.drawWorld();
+    this.drawController();
   };
 
   this.selectedBeepersSetZero = function()
   {
     this.world.setBeepersNumber(this.selectedX, this.selectedY, 0);
-    this.draw();
+    this.drawWorld();
+    this.drawController();
   };
 
   this.selectedBeepersDecrement = function()
   {
     this.world.decrementBeepersNumber(this.selectedX, this.selectedY);
-    this.draw();
+    this.drawWorld();
+    this.drawController();
   };
 
   this.selectedBeepersIncrement = function()
   {
     this.world.incrementBeepersNumber(this.selectedX, this.selectedY);
-    this.draw();
+    this.drawWorld();
+    this.drawController();
   };
 
   this.putKarelOnSelectedField = function()
   {
     this.world.setKarelPosition(this.selectedX, this.selectedY);
-    this.draw();
+    this.drawWorld();
+    this.drawController();
   };
 
   this.karelBeepersSet = function()
@@ -644,25 +740,29 @@ function WorldViewClass(status, world, containerID)
     if(number < 0)
       number = 0;
     this.world.setKarelBeepersNumber(number);
-    this.draw();
+    this.drawWorld();
+    this.drawController();
   };
 
   this.karelBeepersSetZero = function()
   {
     this.world.setKarelBeepersNumber(0);
-    this.draw();
+    this.drawWorld();
+    this.drawController();
   };
 
   this.karelBeepersDecrement = function()
   {
     this.world.decrementKarelBeepersNumber();
-    this.draw();
+    this.drawWorld();
+    this.drawController();
   };
 
   this.karelBeepersIncrement = function()
   {
     this.world.incrementKarelBeepersNumber();
-    this.draw();
+    this.drawWorld();
+    this.drawController();
   };
 
   this.changeDimensions = function()
@@ -672,16 +772,18 @@ function WorldViewClass(status, world, containerID)
     if(dimensionX != this.world.dimensionX || dimensionY != this.world.dimensionY)
     {
       this.world.changeDimensions(dimensionX, dimensionY);
-      this.initCanvas();
-      this.drawCanvas();
+      this.set();
     }
-    this.drawController();
+    else
+      this.drawController();
   };
 
   this.resetWorld = function()
   {
     this.world.reset();
-    this.draw();
+    this.drawWalls();
+    this.drawWorld();
+    this.drawController();
   };
 
   this.storeWorld = function()
@@ -692,10 +794,10 @@ function WorldViewClass(status, world, containerID)
   this.restoreWorld = function()
   {
     this.world.loadCopiedData();
-    this.draw();
+    this.drawWalls();
+    this.drawWorld();
+    this.drawController();
   };
 
   this.init();
-  this.initCanvas();
-  this.draw();
 }

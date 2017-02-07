@@ -1,7 +1,7 @@
 function SettingsClass()
 {
   this.statusTimerMilliSecondsDefault = 5000;
-  this.runnerJobMilliSecondsDefault = 100;
+  this.runnerJobMilliSecondsDefault = 50;
 
   this.statusTimerMilliSeconds = this.statusTimerMilliSecondsDefault;
   this.runnerJobMilliSeconds = this.runnerJobMilliSecondsDefault;

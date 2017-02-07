@@ -12,7 +12,7 @@ function MachineViewClass(machine, containerID)
       this.container.innerHTML = 'Not yet compiled';
       return;
     }
-    var text = '<div class="overflow"><div class="left_div"><table class="border_collapse">';
+    var text = '<div style="overflow: auto;"><div class="left_div"><table style="border-collapse: collapse;">';
     for(var i = 0; i < this.machine.code.length; i++)
     {
       text += '<tr id="'+this.$name()+'_code_row_'+i+'"><td class="machine_view_code_address_cell">';
@@ -32,7 +32,7 @@ function MachineViewClass(machine, containerID)
       text += '</td></tr>';
     }
     text +=
-      '</table></div><div class="left_div"><table class="border_collapse">'+
+      '</table></div><div class="left_div"><table style="border-collapse: collapse;">'+
       '<tr><td>PC</td><td>= <span id="'+this.$name()+'_pc" class="machine_view_data"></span></td></tr>'+
       '<tr><td>Stopped</td><td>= <span id="'+this.$name()+'_stopped" class="machine_view_data"></span></td></tr>'+
       '<tr><td>&nbsp;</td><td class="machine_view_data_width">&nbsp;</td></tr>'+

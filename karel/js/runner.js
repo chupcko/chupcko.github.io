@@ -13,7 +13,8 @@ function RunnerClass(settings, status, machine, worldView, machineView)
       this.status.setMessage('Machine stopped');
     else if(result !== true)
       this.status.setError(result);
-    worldView.draw();
+    worldView.drawWorld();
+    worldView.drawController();
     machineView.draw();
   };
 

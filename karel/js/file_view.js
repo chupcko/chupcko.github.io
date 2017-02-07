@@ -26,7 +26,7 @@ function FileViewClass(status, file, containerID)
       '<button type="button" class="file_view_button" onclick="'+this.$name()+'.saveWorld();">Save world</button><input type="text" id="'+this.$name()+'_world_file_name"/><br/>'+
       '<p/>'+
       'Examples:'+
-      '<table class="border_collapse">';
+      '<table style="border-collapse: collapse;">';
     for(var i = 0; i < this.examples.length; i++)
       text +=
         '<tr><td>'+this.examples[i]+'</td>'+
@@ -47,7 +47,7 @@ function FileViewClass(status, file, containerID)
   this.loadProgram = function()
   {
     var files = document.getElementById(this.$name()+'_program_file').files;
-    if(files.length != 1)
+    if(files.length < 1)
     {
       this.status.setError('First select program file');
       return;
@@ -60,7 +60,7 @@ function FileViewClass(status, file, containerID)
   this.loadWorld = function()
   {
     var files = document.getElementById(this.$name()+'_world_file').files;
-    if(files.length != 1)
+    if(files.length < 1)
     {
       this.status.setError('First select world file');
       return;
