@@ -11,7 +11,7 @@ function SettingsViewClass(settings, containerID)
     this.container.innerHTML =
       '<table style="border-collapse: collapse;"><tr>'+
       '<td>Status timer in milli seconds ( &ge; '+this.statusTimerMilliSecondsMin+' ):</td><td>'+
-      '<input type="text" id="'+this.$name()+'_timer_milli_seconds" class="settings_view_input" onchange="'+this.$name()+'.setStatusTimerMilliSeconds();"/>'+
+      '<input type="text" id="'+this.$name()+'_status_timer_milli_seconds" class="settings_view_input" onchange="'+this.$name()+'.setStatusTimerMilliSeconds();"/>'+
       '<button type="button" class="settings_view_button" onclick="'+this.$name()+'.setStatusTimerMilliSeconds();">Set</button>'+
       '<button type="button" class="settings_view_button" onclick="'+this.$name()+'.minStatusTimerMilliSeconds();">Min</button>'+
       '<button type="button" class="settings_view_button" onclick="'+this.$name()+'.defaultStatusTimerMilliSeconds();">Default</button>'+
@@ -26,13 +26,13 @@ function SettingsViewClass(settings, containerID)
 
   this.draw = function()
   {
-    document.getElementById(this.$name()+'_timer_milli_seconds').value = this.settings.statusTimerMilliSeconds;
+    document.getElementById(this.$name()+'_status_timer_milli_seconds').value = this.settings.statusTimerMilliSeconds;
     document.getElementById(this.$name()+'_runner_job_milli_seconds').value = this.settings.runnerJobMilliSeconds;
   };
 
   this.setStatusTimerMilliSeconds = function()
   {
-    var number = parseInt(document.getElementById(this.$name()+'_timer_milli_seconds').value);
+    var number = parseInt(document.getElementById(this.$name()+'_status_timer_milli_seconds').value);
     if(number < this.statusTimerMilliSecondsMin)
       number = this.statusTimerMilliSecondsMin;
     this.settings.setStatusTimerMilliSeconds(number);

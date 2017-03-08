@@ -27,14 +27,14 @@ function SettingsClass()
 
   this.saveToCookie = function()
   {
-    this.putCookie('karel_timer_milli_seconds', this.statusTimerMilliSeconds);
+    this.putCookie('karel_status_timer_milli_seconds', this.statusTimerMilliSeconds);
     this.putCookie('karel_runner_job_milli_seconds', this.runnerJobMilliSeconds);
   };
 
   this.loadFromCookie = function()
   {
     var value;
-    value = this.getCookie('karel_timer_milli_seconds');
+    value = this.getCookie('karel_status_timer_milli_seconds');
     if(value !== undefined)
       this.statusTimerMilliSeconds = parseInt(value);
     value = this.getCookie('karel_runner_job_milli_seconds');
