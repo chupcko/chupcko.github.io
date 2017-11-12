@@ -5,6 +5,7 @@
 
    function load(what)
    {
+     document.getElementById('result').innerHTML = '&nbsp;';
      var xhttp = new XMLHttpRequest();
      xhttp.onerror = function(error)
      {
@@ -18,24 +19,30 @@
          document.getElementById('result').innerHTML = this.responseText;
        }
      };
-     xhttp.open('GET', 'http://host.chupcko.org:3000/'+what, true);
+     xhttp.open('GET', 'https://host.chupcko.org/'+what, true);
      xhttp.send();
    }
 
    </script>
   </head>
   <body>
-    <a href="http://host.chupcko.org:3000/without">http://host.chupcko.org:3000/without</a><br/>
+    <a href="https://host.chupcko.org/without">https://host.chupcko.org/without</a><br/>
     <button type="button" onclick="load('without')">without Allow</button>
     <p/>
-    <a href="http://host.chupcko.org:3000/with">http://host.chupcko.org:3000/with</a><br/>
+    <a href="https://host.chupcko.org/with">https://host.chupcko.org/with</a><br/>
     <button type="button" onclick="load('with')">with Allow</button> (only from http://chpublichp.github.io)
     <p/>
-    <a href="http://host.chupcko.org:3000/withAll">http://host.chupcko.org:3000/withAll</a><br/>
+    <a href="https://host.chupcko.org/withAll">https://host.chupcko.org/withAll</a><br/>
     <button type="button" onclick="load('withAll')">with All Allow</button>
     <p/>
     <div id="result" style="border: 1px black solid;">
       &nbsp;
     </div>
+    <hr>
+    <a href="http://chpublichp.github.io/first.html">http://chpublichp.github.io/first.html</a><br/>
+    <a href="http://chupcko.org/first.html">http://chupcko.org/first.html</a>
+    <p/>
+    <a href="http://chpublichp.github.io/first.tgz">http://chpublichp.github.io/first.tgz</a><br/>
+    <a href="http://chpublichp.github.io/cacert.pem">http://chpublichp.github.io/cacert.pem</a>
   </body>
 </html>
