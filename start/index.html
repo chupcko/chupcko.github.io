@@ -139,16 +139,6 @@
   outline-width: var(--element-border-width);
 }
 
-.spaceHorizontal {
-  display: inline-block;
-  width: var(--element-space);
-}
-
-.spaceVertical {
-  display: block;
-  height: var(--element-space);
-}
-
 @keyframes roll {
   from {
     transform: rotate(0deg);
@@ -164,13 +154,42 @@
   animation-timing-function: ease-in-out;
 }
 
+.spaceHorizontal {
+  display: inline-block;
+  width: var(--element-space);
+}
+
+.spaceVertical {
+  display: block;
+  height: var(--element-space);
+}
+
       /*]]>*/
     </style>
     <script type="text/javascript">
       /*<![CDATA[*/
 
 let dateId = undefined;
+let containerId = undefined;
 let inputId = undefined;
+
+function onLoad() {
+  dateId = document.getElementById('date');
+  containerId = document.getElementById('container');
+  inputId = document.getElementById('input');
+  inputId.focus();
+  document.addEventListener('keyup', keyUpEvent);
+  showDate();
+  setInterval(showDate, 200);
+}
+
+function keyUpEvent(event) {
+  if(event.code === 'F2') {
+    containerId.classList.remove('roll');
+    void containerId.offsetWidth;
+    containerId.classList.add('roll');
+  }
+}
 
 function showDate() {
   const now = new Date();
@@ -182,24 +201,6 @@ function showDate() {
   const minute = ('0'+now.getMinutes()).slice(-2);
   const second = ('0'+now.getSeconds()).slice(-2);
   dateId.innerHTML = `${day} ${year}-${month}-${date} ${hour}:${minute}:${second}`;
-}
-
-function onLoad() {
-  document.addEventListener(
-    'keyup',
-    (event) => {
-      if(event.code === 'F2') {
-        document.getElementById('container').classList.remove('roll');
-        void document.getElementById('container').offsetWidth;
-        document.getElementById('container').classList.add('roll');
-      }
-    }
-  );
-  dateId = document.getElementById('date');
-  inputId = document.getElementById('input');
-  inputId.focus();
-  showDate();
-  setInterval(showDate, 250);
 }
 
 function inputClean() {
@@ -296,7 +297,7 @@ function go() {
         </div>
       </div>
     </div>
-    <div class="footerVersion">Version: 20220301</div>
-    <div class="footerSignature">&copy; 2022 Goran "<a href="http://www.chupcko.org/" class="link">CHUPCKO</a>" Lazi&#x0107;</div>
+    <div class="footerVersion">Version: 20220414</div>
+    <div class="footerSignature">&copy; 2022 Goran "<a href="https://chupcko.org/" class="link">CHUPCKO</a>" Lazi&#x0107;</div>
   </body>
 </html>
