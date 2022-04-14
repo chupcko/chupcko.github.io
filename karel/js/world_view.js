@@ -188,6 +188,7 @@ function WorldViewClass(status, world, containerID)
     this.drawBorder();
     this.drawLines();
     this.drawMarkers();
+    this.drawWorld();
     this.drawController();
   };
 
