@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Start Page</title>
+    <style type="text/css">
+      /*<![CDATA[*/
+
+:root {
+  --action-border-color: rgb(80%, 80%, 80%);
+  --action-border-radius: 4px;
+  --body-margin: 16px;
+  --color: rgb(0%, 0%, 0%);
+  --element-border-width: 2px;
+  --element-padding: 8px;
+  --element-space: 16px;
+  --font-family: arial, sans-serif;
+  --font-size: 16px;
+  --input-border-color: rgb(50%, 50%, 50%);
+  --input-border-radius: 6px;
+  --link-color: rgb(0%, 0%, 80%);
+}
+
+.action {
+  background-color: rgb(90%, 90%, 90%);
+  border-radius: var(--action-border-radius);
+  display: inline-block;
+  margin: var(--element-border-width);
+  padding: var(--element-padding);
+  text-align: center;
+  text-decoration: none;
+  width: 192px;
+}
+
+.action:active,
+.action:link,
+.action:visited {
+  color: var(--color);
+}
+
+.action:hover {
+  border-color: var(--action-border-color);
+  border-style: solid;
+  border-width: var(--element-border-width);
+  box-shadow: 0px 1px var(--action-border-radius) var(--action-border-color);
+  margin: 0px;
+  outline-style: none;
+}
+
+.action:focus {
+  border-color: var(--link-color);
+  border-style: solid;
+  border-width: var(--element-border-width);
+  margin: 0px;
+  outline-style: none;
+}
+
+.body {
+  background-color: rgb(100%, 100%, 100%);
+  box-sizing: content-box;
+  color: var(--color);
+  font-family: var(--font-family);
+  font-size: var(--font-size);
+  margin: var(--body-margin);
+  user-select: none;
+}
+
+.center {
+  left: 50%;
+  position: fixed;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.container {
+  display: inline-block;
+}
+
+.footerSignature {
+  bottom: var(--body-margin);
+  position: fixed;
+  right: var(--body-margin);
+}
+
+.footerVersion {
+  bottom: var(--body-margin);
+  left: var(--body-margin);
+  position: fixed;
+}
+
+.headerDate {
+  font-size: 32px;
+  left: var(--body-margin);
+  position: fixed;
+  top: var(--body-margin);
+}
+
+.hidden {
+  display: none;
+}
+
+.input {
+  border-color: var(--input-border-color);
+  border-radius: var(--input-border-radius);
+  border-style: solid;
+  border-width: var(--element-border-width);
+  font-family: var(--font-family);
+  font-size: var(--font-size);
+  padding: var(--element-padding);
+  width: 648px;
+}
+
+.input:hover {
+  box-shadow: 0px 1px var(--input-border-radius) var(--input-border-color);
+}
+
+.input:focus {
+  outline-style: none;
+}
+
+.link {
+  text-decoration: none;
+}
+
+.link:active,
+.link:link,
+.link:visited {
+  color: var(--link-color);
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.link:focus {
+  outline-color: var(--link-color);
+  outline-offset: 1px;
+  outline-style: solid;
+  outline-width: var(--element-border-width);
+}
+
+.spaceHorizontal {
+  display: inline-block;
+  width: var(--element-space);
+}
+
+.spaceVertical {
+  display: block;
+  height: var(--element-space);
+}
+
+@keyframes roll {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.roll {
+  animation-duration: 2s;
+  animation-name: roll;
+  animation-timing-function: ease-in-out;
+}
+
+      /*]]>*/
+    </style>
+    <script type="text/javascript">
+      /*<![CDATA[*/
+
+let dateId = undefined;
+let inputId = undefined;
+
+function showDate() {
+  const now = new Date();
+  const day = [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat' ][now.getDay()]
+  const year = now.getFullYear();
+  const month = ('0'+(now.getMonth()+1)).slice(-2);
+  const date = ('0'+now.getDate()).slice(-2);
+  const hour = ('0'+now.getHours()).slice(-2);
+  const minute = ('0'+now.getMinutes()).slice(-2);
+  const second = ('0'+now.getSeconds()).slice(-2);
+  dateId.innerHTML = `${day} ${year}-${month}-${date} ${hour}:${minute}:${second}`;
+}
+
+function onLoad() {
+  document.addEventListener(
+    'keyup',
+    (event) => {
+      if(event.code === 'F2') {
+        document.getElementById('container').classList.remove('roll');
+        void document.getElementById('container').offsetWidth;
+        document.getElementById('container').classList.add('roll');
+      }
+    }
+  );
+  dateId = document.getElementById('date');
+  inputId = document.getElementById('input');
+  inputId.focus();
+  showDate();
+  setInterval(showDate, 250);
+}
+
+function inputClean() {
+  inputId.value = '';
+  inputId.focus();
+  return false;
+}
+
+function submitInjectedForm(idSuffix) {
+  document.getElementById('form_'+idSuffix).action = document.getElementById('formAction_'+idSuffix).value.replace('{{}}', inputId.value);
+  document.getElementById('form_'+idSuffix).submit();
+  return false;
+}
+
+function submitForm(idSuffix) {
+  document.getElementById('formText_'+idSuffix).value = inputId.value;
+  document.getElementById('form_'+idSuffix).submit();
+  return false;
+}
+
+function go() {
+  if(/^https?:\/\/[a-zA-Z0-9-]/.test(inputId.value)) {
+    location.assign(inputId.value);
+  }
+  return false;
+}
+
+      /*]]>*/
+    </script>
+  </head>
+  <body onload="onLoad();" class="body">
+    <div class="headerDate" id="date"></div>
+    <div class="hidden">
+      <form action="https://www.google.com/search" method="GET" id="form_0_0">
+        <input type="hidden" name="q" value="" id="formText_0_0"/>
+        <input type="hidden" name="hl" value="en"/>
+        <input type="hidden" name="ie" value="UTF-8"/>
+        <input type="hidden" name="oe" value="UTF-8"/>
+        <input type="hidden" name="btnG" value="Google+Search"/>
+      </form>
+      <form action="https://www.bing.com/search" method="GET" id="form_0_1">
+        <input type="hidden" name="q" value="" id="formText_0_1"/>
+      </form>
+      <form action="https://www.wikipedia.org/wiki/Special:Search" method="GET" id="form_1_0">
+        <input type="hidden" name="search" value="" id="formText_1_0"/>
+      </form>
+      <form action="https://sr.wikipedia.org/wiki/Special:Search" method="GET" id="form_1_1">
+        <input type="hidden" name="search" value="" id="formText_1_1"/>
+      </form>
+      <form action="https://www.wolframalpha.com/input/" method="GET" id="form_1_2">
+        <input type="hidden" name="i" value="" id="formText_1_2"/>
+      </form>
+      <form method="GET" id="form_2_0">
+        <input type="hidden" value="https://translate.google.com/#sr/en/{{}}" id="formAction_2_0"/>
+      </form>
+      <form method="GET" id="form_2_1">
+        <input type="hidden" value="https://translate.google.com/#en/sr/{{}}" id="formAction_2_1"/>
+      </form>
+      <form action="https://www.thefreedictionary.com/_/search.aspx" method="GET" id="form_2_2">
+        <input type="hidden" name="Word" value="" id="formText_2_2"/>
+        <input type="hidden" name="tab" value="1"/>
+        <input type="hidden" name="SearchBy" value="0"/>
+        <input type="hidden" name="TFDBy" value="0"/>
+      </form>
+      <form action="https://www.youtube.com/results" method="GET" id="form_3_0">
+        <input type="hidden" name="search_query" value="" id="formText_3_0"/>
+        <input type="hidden" name="search_type" value=""/>
+        <input type="hidden" name="aq" value="f"/>
+      </form>
+      <form action="https://www.imdb.com/find" method="GET" id="form_3_1">
+        <input type="hidden" name="q" value="" id="formText_3_1"/>
+        <input type="hidden" name="s" value="All"/>
+      </form>
+      <form method="GET" id="form_3_2">
+        <input type="hidden" value="https://thepiratebay.org/search/{{}}" id="formAction_3_2"/>
+      </form>
+    </div>
+    <div class="center">
+      <div class="container" id="container">
+        <div>
+          <a href="http://localhost/" class="link">http://localhost/</a><a href="http://localhost/~chupcko/" class="link">~chupcko/</a>
+          <div class="spaceVertical"></div>
+          <form onsubmit="return submitForm('0_0');">
+            <input type="text" value="" oncontextmenu="return inputClean();" class="input" id="input"/>
+          </form>
+          <div class="spaceVertical"></div>
+          <a href="https://www.google.com/" onclick="return submitForm('0_0');" class="action">Google</a><div class="spaceHorizontal"></div><a href="https://www.bing.com/" onclick="return submitForm('0_1');" class="action">Bing</a><div class="spaceHorizontal"></div><a href="" onclick="return go();" class="action">GO</a>
+          <div class="spaceVertical"></div>
+          <a href="https://www.wikipedia.org/" onclick="return submitForm('1_0');" class="action">Wikipedia en</a><div class="spaceHorizontal"></div><a href="https://sr.wikipedia.org/" onclick="return submitForm('1_1');" class="action">Wikipedia sr</a><div class="spaceHorizontal"></div><a href="https://www.wolframalpha.com" onclick="return submitForm('1_2');" class="action">Wolfram Alpha</a>
+          <div class="spaceVertical"></div>
+          <a href="https://translate.google.com/" onclick="return submitInjectedForm('2_0');" class="action">Translate sr &gt; en</a><div class="spaceHorizontal"></div><a href="https://translate.google.com/" onclick="return submitInjectedForm('2_1');" class="action">Translate en &gt; sr</a><div class="spaceHorizontal"></div><a href="https://www.thefreedictionary.com/" onclick="return submitForm('2_2');" class="action">The Free Dictionary</a>
+          <div class="spaceVertical"></div>
+          <a href="https://www.youtube.com/" onclick="return submitForm('3_0');" class="action">YouTube</a><div class="spaceHorizontal"></div><a href="https://www.imdb.com/" onclick="return submitForm('3_1');" class="action">IMDB</a><div class="spaceHorizontal"></div><a href="https://thepiratebay.org/" onclick="return submitInjectedForm('3_2');" class="action">The Pirate Bay</a>
+        </div>
+      </div>
+    </div>
+    <div class="footerVersion">Version: 20220301</div>
+    <div class="footerSignature">&copy; 2022 Goran "<a href="http://www.chupcko.org/" class="link">CHUPCKO</a>" Lazi&#x0107;</div>
+  </body>
+</html>
