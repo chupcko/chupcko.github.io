@@ -169,15 +169,15 @@
     <script type="text/javascript">
       /*<![CDATA[*/
 
-let dateId = undefined;
-let containerId = undefined;
-let inputId = undefined;
+let dateElement = undefined;
+let containerElement = undefined;
+let inputElement = undefined;
 
 function onLoad() {
-  dateId = document.getElementById('date');
-  containerId = document.getElementById('container');
-  inputId = document.getElementById('input');
-  inputId.focus();
+  dateElement = document.getElementById('date');
+  containerElement = document.getElementById('container');
+  inputElement = document.getElementById('input');
+  inputElement.focus();
   document.addEventListener('keyup', keyUpEvent);
   showDate();
   setInterval(showDate, 200);
@@ -185,9 +185,9 @@ function onLoad() {
 
 function keyUpEvent(event) {
   if(event.code === 'F2') {
-    containerId.classList.remove('roll');
-    void containerId.offsetWidth;
-    containerId.classList.add('roll');
+    containerElement.classList.remove('roll');
+    void containerElement.offsetWidth;
+    containerElement.classList.add('roll');
   }
 }
 
@@ -200,30 +200,30 @@ function showDate() {
   const hour = ('0'+now.getHours()).slice(-2);
   const minute = ('0'+now.getMinutes()).slice(-2);
   const second = ('0'+now.getSeconds()).slice(-2);
-  dateId.innerHTML = `${day} ${year}-${month}-${date} ${hour}:${minute}:${second}`;
+  dateElement.innerHTML = `${day} ${year}-${month}-${date} ${hour}:${minute}:${second}`;
 }
 
 function inputClean() {
-  inputId.value = '';
-  inputId.focus();
+  inputElement.value = '';
+  inputElement.focus();
   return false;
 }
 
 function submitInjectedForm(idSuffix) {
-  document.getElementById('form_'+idSuffix).action = document.getElementById('formAction_'+idSuffix).value.replace('{{}}', inputId.value);
+  document.getElementById('form_'+idSuffix).action = document.getElementById('formAction_'+idSuffix).value.replace('{{}}', inputElement.value);
   document.getElementById('form_'+idSuffix).submit();
   return false;
 }
 
 function submitForm(idSuffix) {
-  document.getElementById('formText_'+idSuffix).value = inputId.value;
+  document.getElementById('formText_'+idSuffix).value = inputElement.value;
   document.getElementById('form_'+idSuffix).submit();
   return false;
 }
 
 function go() {
-  if(/^https?:\/\/[a-zA-Z0-9-]/.test(inputId.value)) {
-    location.assign(inputId.value);
+  if(/^https?:\/\/[a-zA-Z0-9-]/.test(inputElement.value)) {
+    location.assign(inputElement.value);
   }
   return false;
 }
@@ -297,7 +297,7 @@ function go() {
         </div>
       </div>
     </div>
-    <div class="footerVersion">Version: 20220414</div>
+    <div class="footerVersion">Version: 2022-09-25</div>
     <div class="footerSignature">&copy; 2022 Goran "<a href="https://chupcko.org/" class="link">CHUPCKO</a>" Lazi&#x0107;</div>
   </body>
 </html>
