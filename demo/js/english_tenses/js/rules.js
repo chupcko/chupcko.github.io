@@ -6,7 +6,7 @@ class Rules {
     'enter': [ 'enters',  'entering', 'entered', 'entered' ],
     'get':   [ 'gets',    'getting',  'got',     'gotten'  ],
     'have':  [ 'has',     'having',   'had',     'had'     ],
-    'read':  [ 'reads',   'reding',   'read',    'read'    ],
+    'read':  [ 'reads',   'reading',  'read',    'read'    ],
     'ring':  [ 'rings',   'ringing',  'rang',    'rung'    ],
     'set':   [ 'sets',    'setting',  'set',     'set'     ],
     'sing':  [ 'sings',   'singing',  'sang',    'sung'    ],
