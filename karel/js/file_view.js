@@ -12,6 +12,7 @@ function FileViewClass(status, file, containerID)
     'fill',
     'go_home',
     'labyrinth',
+    'sierpinski',
     'sort',
     'spiral',
     'take_all_beeperes'

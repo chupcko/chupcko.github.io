@@ -43,7 +43,7 @@ function StatusClass(settings, containerID)
             };
           }
         )(this),
-        this.settings.statusTimerMilliSeconds
+        this.settings.statusTimerMilliseconds
       );
   };
 

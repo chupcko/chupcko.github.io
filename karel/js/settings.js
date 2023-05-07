@@ -1,10 +1,10 @@
 function SettingsClass()
 {
-  this.statusTimerMilliSecondsDefault = 5000;
-  this.runnerJobMilliSecondsDefault = 50;
+  this.statusTimerMillisecondsDefault = 5000;
+  this.runnerJobMillisecondsDefault = 50;
 
-  this.statusTimerMilliSeconds = this.statusTimerMilliSecondsDefault;
-  this.runnerJobMilliSeconds = this.runnerJobMilliSecondsDefault;
+  this.statusTimerMilliseconds = this.statusTimerMillisecondsDefault;
+  this.runnerJobMilliseconds = this.runnerJobMillisecondsDefault;
 
   this.CookieExpiresAfterYears = 10;
 
@@ -27,8 +27,8 @@ function SettingsClass()
 
   this.saveToCookie = function()
   {
-    this.putCookie('karel_status_timer_milli_seconds', this.statusTimerMilliSeconds);
-    this.putCookie('karel_runner_job_milli_seconds', this.runnerJobMilliSeconds);
+    this.putCookie('karel_status_timer_milli_seconds', this.statusTimerMilliseconds);
+    this.putCookie('karel_runner_job_milli_seconds', this.runnerJobMilliseconds);
   };
 
   this.loadFromCookie = function()
@@ -36,34 +36,34 @@ function SettingsClass()
     var value;
     value = this.getCookie('karel_status_timer_milli_seconds');
     if(value !== undefined)
-      this.statusTimerMilliSeconds = parseInt(value);
+      this.statusTimerMilliseconds = parseInt(value);
     value = this.getCookie('karel_runner_job_milli_seconds');
     if(value !== undefined)
-      this.runnerJobMilliSeconds = parseInt(value);
+      this.runnerJobMilliseconds = parseInt(value);
     this.saveToCookie();
   };
 
-  this.setStatusTimerMilliSeconds = function(value)
+  this.setStatusTimerMilliseconds = function(value)
   {
-    this.statusTimerMilliSeconds = value;
+    this.statusTimerMilliseconds = value;
     this.saveToCookie();
   };
 
-  this.resetStatusTimerMilliSeconds = function()
+  this.resetStatusTimerMilliseconds = function()
   {
-    this.statusTimerMilliSeconds = this.statusTimerMilliSecondsDefault;
+    this.statusTimerMilliseconds = this.statusTimerMillisecondsDefault;
     this.saveToCookie();
   };
 
-  this.setRunnerJobMilliSeconds = function(value)
+  this.setRunnerJobMilliseconds = function(value)
   {
-    this.runnerJobMilliSeconds = value;
+    this.runnerJobMilliseconds = value;
     this.saveToCookie();
   };
 
-  this.resetRunnerJobMilliSeconds = function()
+  this.resetRunnerJobMilliseconds = function()
   {
-    this.runnerJobMilliSeconds = this.runnerJobMilliSecondsDefault;
+    this.runnerJobMilliseconds = this.runnerJobMillisecondsDefault;
     this.saveToCookie();
   };
 

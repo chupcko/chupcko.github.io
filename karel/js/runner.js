@@ -45,7 +45,7 @@ function RunnerClass(settings, status, machine, worldView, machineView)
             };
           }
         )(this),
-        this.settings.runnerJobMilliSeconds
+        this.settings.runnerJobMilliseconds
       );
   };
 

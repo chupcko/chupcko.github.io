@@ -1,0 +1,87 @@
+turn()
+{
+  left;
+  left;
+}
+
+right()
+{
+  left;
+  left;
+  left;
+}
+
+back_to_field()
+{
+  right();
+  move;
+  left;
+}
+
+calculate_field()
+{
+  repeat(2)
+  {
+    left;
+    move;
+  }
+  turn();
+  if(find)
+  {
+    move;
+    if(find)
+    {
+      back_to_field();
+    }
+    else
+    {
+      back_to_field();
+      put;
+    }
+  }
+  else
+  {
+    move;
+    if(find)
+    {
+      back_to_field();
+      put;
+    }
+    else
+    {
+      back_to_field();
+    }
+  }
+}
+
+calculate_line()
+{
+  put;
+  left;
+  while(!wall)
+  {
+    move;
+    calculate_field();
+  }
+}
+
+back_on_begin()
+{
+  turn();
+  while(!wall)
+  {
+    move;
+  }
+  left;
+}
+
+main()
+{
+  put;
+  while(!wall)
+  {
+    move;
+    calculate_line();
+    back_on_begin();
+  }
+}
