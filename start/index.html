@@ -169,15 +169,15 @@
     <script type="text/javascript">
       /*<![CDATA[*/
 
-let dateElement = undefined;
-let containerElement = undefined;
-let inputElement = undefined;
+let DateElement = undefined;
+let ContainerElement = undefined;
+let InputElement = undefined;
 
 function onLoad() {
-  dateElement = document.getElementById('date');
-  containerElement = document.getElementById('container');
-  inputElement = document.getElementById('input');
-  inputElement.focus();
+  DateElement = document.getElementById('date');
+  ContainerElement = document.getElementById('container');
+  InputElement = document.getElementById('input');
+  InputElement.focus();
   document.addEventListener('keyup', keyUpEvent);
   showDate();
   setInterval(showDate, 200);
@@ -185,9 +185,9 @@ function onLoad() {
 
 function keyUpEvent(event) {
   if(event.code === 'F2') {
-    containerElement.classList.remove('roll');
-    void containerElement.offsetWidth;
-    containerElement.classList.add('roll');
+    ContainerElement.classList.remove('roll');
+    void ContainerElement.offsetWidth;
+    ContainerElement.classList.add('roll');
   }
 }
 
@@ -200,30 +200,30 @@ function showDate() {
   const hour = ('0'+now.getHours()).slice(-2);
   const minute = ('0'+now.getMinutes()).slice(-2);
   const second = ('0'+now.getSeconds()).slice(-2);
-  dateElement.innerHTML = `${day} ${year}-${month}-${date} ${hour}:${minute}:${second}`;
+  DateElement.innerHTML = `${day} ${year}-${month}-${date} ${hour}:${minute}:${second}`;
 }
 
 function inputClean() {
-  inputElement.value = '';
-  inputElement.focus();
+  InputElement.value = '';
+  InputElement.focus();
   return false;
 }
 
 function submitInjectedForm(idSuffix) {
-  document.getElementById('form_'+idSuffix).action = document.getElementById('formAction_'+idSuffix).value.replace('{{}}', inputElement.value);
+  document.getElementById('form_'+idSuffix).action = document.getElementById('formAction_'+idSuffix).value.replace('{{}}', InputElement.value);
   document.getElementById('form_'+idSuffix).submit();
   return false;
 }
 
 function submitForm(idSuffix) {
-  document.getElementById('formText_'+idSuffix).value = inputElement.value;
+  document.getElementById('formText_'+idSuffix).value = InputElement.value;
   document.getElementById('form_'+idSuffix).submit();
   return false;
 }
 
 function go() {
-  if(/^https?:\/\/[a-zA-Z0-9-]/.test(inputElement.value)) {
-    location.assign(inputElement.value);
+  if(/^https?:\/\/[a-zA-Z0-9-]/.test(InputElement.value)) {
+    location.assign(InputElement.value);
   }
   return false;
 }
@@ -283,7 +283,7 @@ function go() {
         <a href="http://localhost/" class="link">http://localhost/</a><a href="http://localhost/~chupcko/" class="link">~chupcko/</a>
         <div class="spaceVertical"></div>
         <form onsubmit="return submitForm('0_0');">
-          <input type="text" value="" oncontextmenu="return inputClean();" class="input" id="input"/>
+          <input type="text" value="" oncut="return inputClean();" class="input" id="input"/>
         </form>
         <div class="spaceVertical"></div>
         <a href="https://www.google.com/" onclick="return submitForm('0_0');" class="action">Google</a><div class="spaceHorizontal"></div><a href="https://www.bing.com/" onclick="return submitForm('0_1');" class="action">Bing</a><div class="spaceHorizontal"></div><a href="" onclick="return go();" class="action">GO</a>
@@ -295,7 +295,7 @@ function go() {
         <a href="https://www.youtube.com/" onclick="return submitForm('3_0');" class="action">YouTube</a><div class="spaceHorizontal"></div><a href="https://www.imdb.com/" onclick="return submitForm('3_1');" class="action">IMDB</a><div class="spaceHorizontal"></div><a href="https://thepiratebay.org/" onclick="return submitInjectedForm('3_2');" class="action">The Pirate Bay</a>
       </div>
     </div>
-    <div class="footerVersion">Version: 2022-11-04</div>
-    <div class="footerSignature">&copy; 2022 Goran "<a href="https://chupcko.org/" class="link">CHUPCKO</a>" Lazi&#x0107;</div>
+    <div class="footerVersion">Version: 2023-07-04</div>
+    <div class="footerSignature">&copy; 2023 Goran "<a href="https://chupcko.org/" class="link">CHUPCKO</a>" Lazi&#x0107;</div>
   </body>
 </html>
