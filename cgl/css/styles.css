@@ -1,0 +1,160 @@
+/* ===== shared base (index / cgl) ===== */
+:root {
+  --bg: rgb(248, 247, 244);
+  --text: rgb(27, 36, 48);
+  --accent: #1d6f42;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  margin: 0;
+  width: 100%;
+  min-height: 100vh;
+  padding: 32px;
+  font-family: "lucida grande", tahoma, verdana, arial, helvetica, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  box-sizing: border-box;
+}
+
+* { box-sizing: border-box; }
+
+.center { text-align: center; }
+
+h1.center { color: var(--accent); }
+
+.canvas-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+  gap: 24px;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.canvas-row > cgl-3d { flex: none; }
+
+.links-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+}
+
+a.card {
+  display: block;
+  width: 300px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px 20px;
+  text-decoration: none;
+  color: inherit;
+}
+a.card:hover { border-color: var(--accent); }
+a.card b { display: block; color: var(--accent); margin-bottom: 4px; }
+a.card span { font-size: 0.85rem; color: #666; }
+
+/* ===== tool pages (box, stencil) ===== */
+body.tool {
+  flex-direction: row;
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
+  font-family: system-ui, sans-serif;
+  background: #f4f1ea;
+  color: #2b2b2b;
+}
+
+body.tool aside {
+  width: 260px;
+  padding: 20px;
+  background: #fff;
+  border-right: 1px solid #ddd;
+  flex-shrink: 0;
+}
+
+body.tool a.back {
+  display: block;
+  font-size: 0.8rem;
+  margin-bottom: 10px;
+  color: var(--accent);
+  text-decoration: none;
+}
+body.tool a.back:hover { text-decoration: underline; }
+
+body.tool h1 { font-size: 1.1rem; margin: 0 0 16px; color: var(--accent); }
+
+body.tool label {
+  display: block;
+  font-size: 0.8rem;
+  margin: 10px 0 3px;
+  color: #555;
+}
+
+body.tool input[type=number],
+body.tool input[type=text],
+body.tool select {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  background: #fff;
+}
+
+body.tool .chk {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  font-size: 0.85rem;
+}
+body.tool .chk label { margin: 0; }
+
+body.tool button {
+  width: 100%;
+  margin-top: 18px;
+  padding: 10px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+body.tool button:hover { background: #175935; }
+
+body.tool button.secondary {
+  margin-top: 10px;
+  padding: 6px;
+  background: #f1f1f1;
+  color: #2b2b2b;
+  border: 1px solid #ccc;
+}
+body.tool button.secondary:hover { background: #e4e4e4; }
+
+body.tool #warnings { margin-top: 12px; font-size: 0.8rem; color: #b03a2e; }
+body.tool #warnings div { margin-bottom: 6px; }
+body.tool #computed { margin-top: 8px; font-size: 0.8rem; color: #555; }
+
+body.tool main { flex: 1; padding: 20px; overflow: auto; }
+
+body.tool #preview {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+}
+body.tool #preview svg { width: 100%; height: auto; display: block; }
+
+body.tool .hint {
+  font-size: 0.75rem;
+  color: #888;
+  margin-top: 10px;
+  line-height: 1.4;
+}
