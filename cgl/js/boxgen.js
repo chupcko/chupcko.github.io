@@ -120,6 +120,94 @@ function buildPath(edges, dx, dy, opts) {
   return out;
 }
 
+// Panel table for one of the box layouts, shared with the divider box.
+//
+// Edge polarities (pols): [top, right, bottom, left]. The bottom panel is
+// "female" on all 4 edges; front/back are "male" on their side and bottom
+// edges; left/right are "female" on the verticals and "male" on the
+// bottom. The top edge is flat (open box).
+// nums: joint number per edge [top, right, bottom, left] — edges with the
+// same number fit together during assembly (null = edge without a joint).
+// role: which box panel this is ('bottom', 'front', 'back', 'left',
+// 'right') — rotated panels keep the role of the wall they represent.
+//
+// In joined layouts complementary edges tile perfectly when neighboring
+// panels overlap by the plywood thickness, so one laser pass cuts both
+// profiles. `skip` marks the edge whose cut line belongs to a neighbor
+// ('all' = the whole outline is covered by the neighbors' cuts).
+function boxLayout(W, L, H, t, layout) {
+  const FRONT = ['flat', 'male', 'male', 'male'];
+  const SIDE  = ['flat', 'female', 'male', 'female'];
+  const FEM4  = ['female', 'female', 'female', 'female'];
+  const m = 5;
+  let panels, totalW, totalH;
+
+  if (layout === 'separate') {
+    // Every panel on its own, nothing shared.
+    const g = 5;
+    const row1h = Math.max(L, H);
+    panels = [
+      { role: 'bottom', w: W, h: L, pols: FEM4,  nums: [1, 2, 3, 4],    skip: null, x: 0,           y: 0 },
+      { role: 'front',  w: W, h: H, pols: FRONT, nums: [null, 5, 1, 8], skip: null, x: W + g,       y: 0 },
+      { role: 'back',   w: W, h: H, pols: FRONT, nums: [null, 7, 3, 6], skip: null, x: 2 * (W + g), y: 0 },
+      { role: 'right',  w: L, h: H, pols: SIDE,  nums: [null, 6, 2, 5], skip: null, x: 0,           y: row1h + g },
+      { role: 'left',   w: L, h: H, pols: SIDE,  nums: [null, 8, 4, 7], skip: null, x: L + g,       y: row1h + g },
+    ];
+    totalW = 2 * m + Math.max(3 * W + 2 * g, 2 * L + g);
+    totalH = 2 * m + row1h + g + H;
+  } else if (layout === 'cross') {
+    // Bottom in the center, the four sides around it (1+3+1). Back is
+    // rotated 180°, left/right by ∓90°, so every male bottom edge faces the
+    // bottom panel and all 4 of its edges are shared cuts — the bottom
+    // panel itself emits no path at all. The side arms trim a stub of
+    // length t off their perpendicular edges where those would re-cut the
+    // front/back corner fingers.
+    const o = H - t;
+    const west = [{ edge: 0, at: 'end', len: t }, { edge: 2, at: 'start', len: t }];
+    const east = [{ edge: 0, at: 'start', len: t }, { edge: 2, at: 'end', len: t }];
+    panels = [
+      { role: 'bottom', w: W, h: L, pols: FEM4, nums: [1, 2, 3, 4], skip: 'all', x: o, y: o },
+      { role: 'front',  w: W, h: H, pols: ['flat', 'male', 'male', 'male'],     nums: [null, 5, 1, 8], skip: null, x: o,         y: 0 },
+      { role: 'left',   w: H, h: L, pols: ['female', 'male', 'female', 'flat'], nums: [8, 4, 7, null], skip: null, breaks: west, x: 0,         y: o },
+      { role: 'right',  w: H, h: L, pols: ['female', 'flat', 'female', 'male'], nums: [5, null, 6, 2], skip: null, breaks: east, x: o + W - t, y: o },
+      { role: 'back',   w: W, h: H, pols: ['male', 'male', 'flat', 'male'],     nums: [3, 6, null, 7], skip: null, x: o,         y: o + L - t },
+    ];
+    totalW = 2 * m + W + 2 * o;
+    totalH = 2 * m + L + 2 * o;
+  } else if (layout === 'grid32') {
+    // 3+2: row one is a strip front|left|back with shared vertical cuts,
+    // row two is the right side rotated 90° next to the bottom panel. The
+    // bottom shares its top edge with the front and its west edge with the
+    // rotated right side. That side trims only its top stub (covered by the
+    // front's corner finger); its bottom stub must stay — the bottom
+    // panel's female outline is pulled in by t and does not cover it.
+    const o = H - t;
+    panels = [
+      { role: 'front',  w: W, h: H, pols: FRONT, nums: [null, 5, 1, 8], skip: null, x: o,                 y: 0 },
+      { role: 'right',  w: L, h: H, pols: SIDE,  nums: [null, 6, 2, 5], skip: 3,    x: o + W - t,         y: 0 },
+      { role: 'back',   w: W, h: H, pols: FRONT, nums: [null, 7, 3, 6], skip: 3,    x: o + W + L - 2 * t, y: 0 },
+      { role: 'bottom', w: W, h: L, pols: FEM4,  nums: [1, 2, 3, 4],    skip: 0,    x: o,                 y: H - t },
+      { role: 'left',   w: H, h: L, pols: ['female', 'male', 'female', 'flat'], nums: [8, 4, 7, null], skip: 1,
+        breaks: [{ edge: 0, at: 'end', len: t }], x: 0, y: H - t },
+    ];
+    totalW = 2 * m + o + 2 * W + L - 2 * t;
+    totalH = 2 * m + H - t + L;
+  } else {
+    // Strip (4+1): sides in one row front|left|back|right with shared
+    // vertical cuts, bottom hangs under the front sharing its bottom edge.
+    panels = [
+      { role: 'front',  w: W, h: H, pols: FRONT, nums: [null, 5, 1, 8], skip: null, x: 0,                 y: 0 },
+      { role: 'right',  w: L, h: H, pols: SIDE,  nums: [null, 6, 2, 5], skip: 3,    x: W - t,             y: 0 },
+      { role: 'back',   w: W, h: H, pols: FRONT, nums: [null, 7, 3, 6], skip: 3,    x: W + L - 2 * t,     y: 0 },
+      { role: 'left',   w: L, h: H, pols: SIDE,  nums: [null, 8, 4, 7], skip: 3,    x: 2 * W + L - 3 * t, y: 0 },
+      { role: 'bottom', w: W, h: L, pols: FEM4,  nums: [1, 2, 3, 4],    skip: 0,    x: 0,                 y: H - t },
+    ];
+    totalW = 2 * m + 2 * W + 2 * L - 3 * t;
+    totalH = 2 * m + H - t + L;
+  }
+  return { panels, totalW, totalH };
+}
+
 // Main entry point: returns { svg, warnings }
 function generateBox(params) {
   const W = params.width, L = params.length, H = params.height;
@@ -147,86 +235,8 @@ function generateBox(params) {
     warnings.push('Finger width is large relative to the box — the minimum of 3 segments per edge is used.');
   }
 
-  // Edge polarities: [top, right, bottom, left]
-  // The bottom panel is "female" on all 4 edges; front/back are "male" on
-  // their side and bottom edges; left/right are "female" on the verticals
-  // and "male" on the bottom. The top edge is flat (open box).
-  // nums: joint number per edge [top, right, bottom, left] — edges with the
-  // same number fit together during assembly (null = edge without a joint).
-  //
-  // In joined layouts complementary edges tile perfectly when neighboring
-  // panels overlap by the plywood thickness, so one laser pass cuts both
-  // profiles. `skip` marks the edge whose cut line belongs to a neighbor
-  // ('all' = the whole outline is covered by the neighbors' cuts).
-  const FRONT = ['flat', 'male', 'male', 'male'];
-  const SIDE  = ['flat', 'female', 'male', 'female'];
-  const FEM4  = ['female', 'female', 'female', 'female'];
   const m = 5;
-  let panels, totalW, totalH;
-
-  if (layout === 'separate') {
-    // Every panel on its own, nothing shared.
-    const g = 5;
-    const row1h = Math.max(L, H);
-    panels = [
-      { w: W, h: L, pols: FEM4,  nums: [1, 4, 2, 3],    skip: null, x: 0,           y: 0 },
-      { w: W, h: H, pols: FRONT, nums: [null, 5, 1, 8], skip: null, x: W + g,       y: 0 },
-      { w: W, h: H, pols: FRONT, nums: [null, 7, 2, 6], skip: null, x: 2 * (W + g), y: 0 },
-      { w: L, h: H, pols: SIDE,  nums: [null, 6, 4, 5], skip: null, x: 0,           y: row1h + g },
-      { w: L, h: H, pols: SIDE,  nums: [null, 8, 3, 7], skip: null, x: L + g,       y: row1h + g },
-    ];
-    totalW = 2 * m + Math.max(3 * W + 2 * g, 2 * L + g);
-    totalH = 2 * m + row1h + g + H;
-  } else if (layout === 'cross') {
-    // Bottom in the center, the four sides around it (1+3+1). Back is
-    // rotated 180°, left/right by ∓90°, so every male bottom edge faces the
-    // bottom panel and all 4 of its edges are shared cuts — the bottom
-    // panel itself emits no path at all. The side arms trim a stub of
-    // length t off their perpendicular edges where those would re-cut the
-    // front/back corner fingers.
-    const o = H - t;
-    const west = [{ edge: 0, at: 'end', len: t }, { edge: 2, at: 'start', len: t }];
-    const east = [{ edge: 0, at: 'start', len: t }, { edge: 2, at: 'end', len: t }];
-    panels = [
-      { w: W, h: L, pols: FEM4, nums: [1, 4, 2, 3], skip: 'all', x: o, y: o },
-      { w: W, h: H, pols: ['flat', 'male', 'male', 'male'],     nums: [null, 5, 1, 8], skip: null, x: o,         y: 0 },
-      { w: H, h: L, pols: ['female', 'male', 'female', 'flat'], nums: [8, 3, 7, null], skip: null, breaks: west, x: 0,         y: o },
-      { w: H, h: L, pols: ['female', 'flat', 'female', 'male'], nums: [5, null, 6, 4], skip: null, breaks: east, x: o + W - t, y: o },
-      { w: W, h: H, pols: ['male', 'male', 'flat', 'male'],     nums: [2, 6, null, 7], skip: null, x: o,         y: o + L - t },
-    ];
-    totalW = 2 * m + W + 2 * o;
-    totalH = 2 * m + L + 2 * o;
-  } else if (layout === 'grid32') {
-    // 3+2: row one is a strip front|left|back with shared vertical cuts,
-    // row two is the right side rotated 90° next to the bottom panel. The
-    // bottom shares its top edge with the front and its west edge with the
-    // rotated right side. That side trims only its top stub (covered by the
-    // front's corner finger); its bottom stub must stay — the bottom
-    // panel's female outline is pulled in by t and does not cover it.
-    const o = H - t;
-    panels = [
-      { w: W, h: H, pols: FRONT, nums: [null, 5, 1, 8], skip: null, x: o,                 y: 0 },
-      { w: L, h: H, pols: SIDE,  nums: [null, 6, 4, 5], skip: 3,    x: o + W - t,         y: 0 },
-      { w: W, h: H, pols: FRONT, nums: [null, 7, 2, 6], skip: 3,    x: o + W + L - 2 * t, y: 0 },
-      { w: W, h: L, pols: FEM4,  nums: [1, 4, 2, 3],    skip: 0,    x: o,                 y: H - t },
-      { w: H, h: L, pols: ['female', 'male', 'female', 'flat'], nums: [8, 3, 7, null], skip: 1,
-        breaks: [{ edge: 0, at: 'end', len: t }], x: 0, y: H - t },
-    ];
-    totalW = 2 * m + o + 2 * W + L - 2 * t;
-    totalH = 2 * m + H - t + L;
-  } else {
-    // Strip (4+1): sides in one row front|left|back|right with shared
-    // vertical cuts, bottom hangs under the front sharing its bottom edge.
-    panels = [
-      { w: W, h: H, pols: FRONT, nums: [null, 5, 1, 8], skip: null, x: 0,                 y: 0 },
-      { w: L, h: H, pols: SIDE,  nums: [null, 6, 4, 5], skip: 3,    x: W - t,             y: 0 },
-      { w: W, h: H, pols: FRONT, nums: [null, 7, 2, 6], skip: 3,    x: W + L - 2 * t,     y: 0 },
-      { w: L, h: H, pols: SIDE,  nums: [null, 8, 3, 7], skip: 3,    x: 2 * W + L - 3 * t, y: 0 },
-      { w: W, h: L, pols: FEM4,  nums: [1, 4, 2, 3],    skip: 0,    x: 0,                 y: H - t },
-    ];
-    totalW = 2 * m + 2 * W + 2 * L - 3 * t;
-    totalH = 2 * m + H - t + L;
-  }
+  const { panels, totalW, totalH } = boxLayout(W, L, H, t, layout);
 
   let cuts = '', texts = '';
   panels.forEach(p => {

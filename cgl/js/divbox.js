@@ -1,22 +1,23 @@
-// UI glue for the box generator page.
+// UI glue for the divider box page.
 'use strict';
 
 (function () {
-  const ids = ['width', 'length', 'height', 'thickness', 'finger', 'stroke', 'labelSize'];
+  const ids = ['width', 'length', 'height', 'thickness', 'finger', 'divH', 'cols', 'rows', 'stroke', 'labelSize'];
   const el = id => document.getElementById(id);
+  let lastSvg = '';
 
   function readParams() {
     const p = {};
     ids.forEach(id => p[id] = parseFloat(el(id).value));
-    p.labels = el('labels').checked;
     p.dims = el('dims').value;
     p.layout = el('layout').value;
-    p.cutColor = el('color').value;
+    p.labels = el('labels').checked;
     p.numColor = el('numColor').value;
+    p.ratiosW = el('ratiosW').value;
+    p.ratiosL = el('ratiosL').value;
+    p.color = el('color').value;
     return p;
   }
-
-  let lastSvg = '';
 
   // The generator works with outer dimensions; inner ones grow by the
   // plywood thickness — two walls for width/length, one for height (open top).
@@ -32,24 +33,19 @@
   function refresh() {
     const p = readParams();
     el('labelSizeRow').style.display = p.labels ? '' : 'none';
-    const res = generateBox(toOuter(p));
+    const res = generateDivBox(toOuter(p));
     lastSvg = res.svg;
     el('warnings').innerHTML = res.warnings.map(w => '<div>⚠ ' + w + '</div>').join('');
     el('preview').innerHTML = res.svg || '';
   }
 
-  function download() {
+  ids.forEach(id => el(id).addEventListener('input', refresh));
+  ['ratiosW', 'ratiosL'].forEach(id => el(id).addEventListener('input', refresh));
+  ['dims', 'layout', 'color', 'numColor', 'labels'].forEach(id => el(id).addEventListener('change', refresh));
+  el('download').addEventListener('click', () => {
     if (!lastSvg) return;
     const p = readParams();
-    downloadSvg(lastSvg, 'box_' + p.width + 'x' + p.length + 'x' + p.height + '.svg');
-  }
-
-  ids.forEach(id => el(id).addEventListener('input', refresh));
-  el('labels').addEventListener('change', refresh);
-  el('dims').addEventListener('change', refresh);
-  el('layout').addEventListener('change', refresh);
-  el('color').addEventListener('change', refresh);
-  el('numColor').addEventListener('change', refresh);
-  el('download').addEventListener('click', download);
+    downloadSvg(lastSvg, 'divbox_' + p.width + 'x' + p.length + 'x' + p.height + '.svg');
+  });
   refresh();
 })();

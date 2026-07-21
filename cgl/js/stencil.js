@@ -57,9 +57,9 @@
   el('boxColor').addEventListener('change', refresh);
   el('download').addEventListener('click', download);
 
-  fetch('stencil.otf')
+  fetch('font/stencil.otf')
     .then(r => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
     .then(buf => { FONT = parseFont(buf); refresh(); })
-    .catch(e => { el('warnings').innerHTML = '<div>⚠ Cannot load stencil.otf (' + e.message + ')</div>'; });
+    .catch(e => { el('warnings').innerHTML = '<div>⚠ Cannot load font/stencil.otf (' + e.message + ')</div>'; });
   refresh();
 })();

@@ -3,28 +3,38 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Laser-cut box generator</title>
+<title>Divider box generator</title>
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="tool">
 <aside>
   <a class="back" href="index.html">&larr; CHUPCKO's Garage Lab</a>
-  <h1>Plywood box</h1>
+  <h1>Divider box</h1>
   <label for="dims">Dimensions are</label>
   <select id="dims">
     <option value="outer" selected>Outer (overall size)</option>
     <option value="inner">Inner (usable space)</option>
   </select>
   <label for="width">Base width (mm)</label>
-  <input type="number" id="width" value="50" min="1" step="1">
+  <input type="number" id="width" value="120" min="1" step="1">
   <label for="length">Base length (mm)</label>
-  <input type="number" id="length" value="50" min="1" step="1">
+  <input type="number" id="length" value="80" min="1" step="1">
   <label for="height">Box height (mm)</label>
-  <input type="number" id="height" value="50" min="1" step="1">
+  <input type="number" id="height" value="40" min="1" step="1">
   <label for="thickness">Plywood thickness (mm)</label>
   <input type="number" id="thickness" value="2" min="0.5" step="0.5">
   <label for="finger">Finger width (mm)</label>
   <input type="number" id="finger" value="10" min="1" step="1">
+  <label for="divH">Divider height (mm, 0 = flush with top)</label>
+  <input type="number" id="divH" value="0" min="0" step="1">
+  <label for="cols">Compartments across width</label>
+  <input type="number" id="cols" value="3" min="1" step="1">
+  <label for="ratiosW">Width ratios (optional)</label>
+  <input type="text" id="ratiosW" placeholder="e.g. 1,2,1 — overrides the count">
+  <label for="rows">Compartments across length</label>
+  <input type="number" id="rows" value="2" min="1" step="1">
+  <label for="ratiosL">Length ratios (optional)</label>
+  <input type="text" id="ratiosL" placeholder="e.g. 30,50 — overrides the count">
   <label for="stroke">Cut line width (mm)</label>
   <input type="number" id="stroke" value="0.08" min="0.01" step="0.01">
   <label for="color">Cut color</label>
@@ -59,14 +69,19 @@
   <button id="download">Download SVG</button>
   <div id="warnings"></div>
   <div class="hint">
-    Dimensions can be outer (overall size) or inner (usable space); inner
-    dimensions are enlarged by the plywood thickness — twice for width and
-    length, once for height (the top is open). Cut lines and engraved joint
-    numbers use the
-    chosen colors — edges with the same number fit together. Neighboring
+    The finger-joint box (open top) with a grid of full-height dividers.
+    The box panels use the chosen layout — in the joined ones neighboring
     panels share their joint edge, so the laser cuts both profiles in a
-    single pass. The box is open at the top: bottom + 4 sides. For a tighter
-    fit, set the kerf in your laser software.
+    single pass; the dividers cannot share edges and sit below the box
+    block. Compartments are equal, or set the ratios field — positive numbers
+    separated by commas, scaled to fill the box (so "1,2,1" and "30,60,30"
+    mean the same). Dividers are flush with the box top, or give a lower
+    divider height. They stand on the bottom; their end tabs go through
+    the holes in the walls, and crossings interlock with half-lap slots
+    (lengthwise dividers slotted from the top, widthwise from the bottom).
+    Turn on joint numbers to engrave assembly hints — the same number marks
+    the two parts of one joint: 1–8 on the box edges, 9 and up pairing each
+    divider end with its wall holes.
   </div>
 </aside>
 <main>
@@ -74,6 +89,7 @@
 </main>
 <script src="js/svglib.js"></script>
 <script src="js/boxgen.js"></script>
-<script src="js/box.js"></script>
+<script src="js/divboxgen.js"></script>
+<script src="js/divbox.js"></script>
 </body>
 </html>
