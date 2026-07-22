@@ -10,44 +10,42 @@
 <aside>
   <a class="back" href="index.html">&larr; CHUPCKO's Garage Lab</a>
   <h1>Hilbert curve</h1>
-  <label for="size">Square size (mm)</label>
-  <input type="number" id="size" value="100" min="1" step="1">
-  <label for="order">Iterations</label>
-  <input type="number" id="order" value="4" min="1" max="10" step="1">
-  <label for="stroke">Line width (mm)</label>
-  <input type="number" id="stroke" value="0.08" min="0.01" step="0.01">
-  <label for="color">Curve color</label>
-  <select id="color">
+  <label for="size" title="Side of the square the curve fills (mm).">Square size (mm)</label>
+  <input type="number" id="size" value="100" min="1" step="1" title="Side of the square the curve fills (mm).">
+  <label for="order" title="Number of subdivisions (1–10). Each iteration doubles the grid density — mind the line width at high counts.">Iterations</label>
+  <input type="number" id="order" value="4" min="1" max="10" step="1" title="Number of subdivisions (1–10). Each iteration doubles the grid density — mind the line width at high counts.">
+  <label for="stroke" title="Stroke width of the curve in the SVG (mm); laser software usually wants hairlines.">Line width (mm)</label>
+  <input type="number" id="stroke" value="0.08" min="0.01" step="0.01" title="Stroke width of the curve in the SVG (mm); laser software usually wants hairlines.">
+  <label for="color" title="Color of the curve — laser software assigns operations by color.">Curve color</label>
+  <select id="color" title="Color of the curve — laser software assigns operations by color.">
     <option value="#000000" selected>Black</option>
     <option value="#ff0000">Red</option>
     <option value="#00ff00">Green</option>
     <option value="#0000ff">Blue</option>
   </select>
-  <div class="chk">
+  <div class="chk" title="Draw a rectangle around the curve; the curve is centered inside it.">
     <input type="checkbox" id="withBox">
     <label for="withBox">Box around curve</label>
   </div>
   <div id="boxRow">
-    <button type="button" id="fitBox" class="secondary">Fit box to curve</button>
-    <label for="boxW">Box width (mm)</label>
-    <input type="number" id="boxW" value="150" min="1" step="1">
-    <label for="boxH">Box height (mm)</label>
-    <input type="number" id="boxH" value="150" min="1" step="1">
-    <label for="boxColor">Box color</label>
-    <select id="boxColor">
+    <button type="button" id="fitBox" class="secondary" title="Set the box size to the curve square plus padding, rounded up to a round number.">Fit box to curve</button>
+    <label for="boxW" title="Width of the surrounding box (mm).">Box width (mm)</label>
+    <input type="number" id="boxW" value="150" min="1" step="1" title="Width of the surrounding box (mm).">
+    <label for="boxH" title="Height of the surrounding box (mm).">Box height (mm)</label>
+    <input type="number" id="boxH" value="150" min="1" step="1" title="Height of the surrounding box (mm).">
+    <label for="boxColor" title="Color of the box rectangle — laser software assigns operations by color.">Box color</label>
+    <select id="boxColor" title="Color of the box rectangle — laser software assigns operations by color.">
       <option value="#000000" selected>Black</option>
       <option value="#ff0000">Red</option>
       <option value="#00ff00">Green</option>
       <option value="#0000ff">Blue</option>
     </select>
   </div>
-  <button id="download">Download SVG</button>
+  <button id="download" title="Save the curve as an SVG file.">Download SVG</button>
   <div id="warnings"></div>
   <div class="hint">
-    A space-filling Hilbert curve drawn as a single polyline that fills the
-    given square. Each iteration doubles the grid density — mind the line
-    width at high iteration counts. The curve is centered inside the
-    optional box.
+    A space-filling Hilbert curve drawn as a single polyline. Hover any
+    option for details.
   </div>
 </aside>
 <main>

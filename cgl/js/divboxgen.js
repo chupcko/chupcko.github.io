@@ -51,98 +51,147 @@ function parseRatios(str) {
   return { arr: parts.length > 1 ? parts : null };
 }
 
-// Closed outline of one divider: body bodyLen wide and hd tall, drawn with
-// a t margin left and right for the end tabs. `slots` are cross positions
-// (inner coordinates along the body); slotFrom tells which edge the
-// half-lap slots open to.
-function dividerPath(bodyLen, t, hd, finger, slots, slotFrom, dx, dy) {
-  const n = divSegments(hd, finger), seg = hd / n;
-  const x = (i, base, out) => (i % 2 === 1 ? out : base);
-  const pts = [[t, 0]];
-  // top edge, left to right
-  if (slotFrom === 'top') slots.forEach(c => {
-    pts.push([t + c - t / 2, 0], [t + c - t / 2, hd / 2],
-             [t + c + t / 2, hd / 2], [t + c + t / 2, 0]);
-  });
-  pts.push([t + bodyLen, 0]);
-  // right end, downward, tabs out to t + bodyLen + t
-  for (let i = 1; i < n; i++) {
-    const a = x(i - 1, t + bodyLen, t + bodyLen + t), b = x(i, t + bodyLen, t + bodyLen + t);
-    if (a !== b) pts.push([a, i * seg], [b, i * seg]);
+// Anchor tabs on a divider's lower edge: one finger-wide tab centered in
+// each span between the crossings (and between a crossing and the wall),
+// so tabs never collide with the half-lap slots. Tiny spans get no tab.
+function anchorTabs(bodyLen, crossings, t, finger) {
+  const bounds = [0];
+  crossings.forEach(c => bounds.push(c - t / 2, c + t / 2));
+  bounds.push(bodyLen);
+  const tabs = [];
+  for (let i = 0; i < bounds.length; i += 2) {
+    const a = bounds[i], b = bounds[i + 1];
+    const w = Math.min(finger, (b - a) / 2);
+    if (w >= t) tabs.push({ c: (a + b) / 2, w });
   }
-  pts.push([t + bodyLen, hd]);
-  // bottom edge, right to left
-  if (slotFrom === 'bottom') slots.slice().reverse().forEach(c => {
-    pts.push([t + c + t / 2, hd], [t + c + t / 2, hd / 2],
-             [t + c - t / 2, hd / 2], [t + c - t / 2, hd]);
-  });
-  pts.push([t, hd]);
-  // left end, upward, tabs out to 0
-  for (let i = n - 1; i >= 1; i--) {
-    const a = x(i, t, 0), b = x(i - 1, t, 0);
-    if (a !== b) pts.push([a, i * seg], [b, i * seg]);
-  }
+  return tabs;
+}
+
+// Through slots in the bottom panel for the divider anchor tabs, as
+// [x1, y1, x2, y2] rectangles. The bottom panel is drawn width × length
+// with the front at the top, so slots need no reorientation.
+function bottomSlotRects(cX, cY, tabsL, tabsW, t) {
+  const rects = [];
+  cX.forEach(c => tabsL.forEach(a =>
+    rects.push([t + c - t / 2, t + a.c - a.w / 2, t + c + t / 2, t + a.c + a.w / 2])));
+  cY.forEach(c => tabsW.forEach(a =>
+    rects.push([t + a.c - a.w / 2, t + c - t / 2, t + a.c + a.w / 2, t + c + t / 2])));
+  return rects;
+}
+
+// Rectangles as SVG subpaths.
+function rectsPath(rects, dx, dy) {
   let d = '';
-  pts.forEach((p, i) => { d += (i === 0 ? 'M' : 'L') + fmtMm(p[0] + dx) + ' ' + fmtMm(p[1] + dy); });
-  return d + 'Z';
-}
-
-// Whether the wall's drawn hole axis runs opposite to its physical axis
-// under number-guided assembly (drawn faces out, corner numbers matched).
-// The corner number at the drawn start of the axis is compared with the
-// corner that physically sits at the axis zero: the width axis starts at
-// joint 8 on the front wall and 7 on the back one, the length axis at
-// joint 5 on the right wall and 8 on the left one.
-function wallMirrored(p) {
-  const f = p.pols.indexOf('flat');
-  const start = (f % 2 === 0) ? 3 : 0; // drawn axis start: left or top edge
-  const zero = { front: 8, back: 7, right: 5, left: 8 }[p.role];
-  return p.nums[start] !== zero;
-}
-
-// Center of a wall hole column along the drawn hole axis.
-function wallHoleCenter(p, c0, t) {
-  const f = p.pols.indexOf('flat');
-  const axis = (f % 2 === 0) ? p.w : p.h;
-  return wallMirrored(p) ? axis - t - c0 : t + c0;
-}
-
-// Through holes in a wall panel for the divider end tabs. `centers` are
-// divider positions in inner coordinates; dx/dy place the panel. The wall's
-// flat edge (the open box top) tells the panel's orientation in the layout:
-// hole columns run from the flat edge inward, divider positions run along
-// it. Upright walls have it on top; in joined layouts the rotated walls
-// have it left/right/bottom and the holes rotate along. `off` is the gap
-// between the box rim and the divider top (lower dividers).
-function wallHoles(p, centers, t, hd, finger, dx, dy, off) {
-  const f = p.pols.indexOf('flat');
-  const n = divSegments(hd, finger), seg = hd / n;
-  let d = '';
-  centers.forEach(c0 => {
-    const c = wallHoleCenter(p, c0, t);
-    for (let i = 1; i < n; i += 2) {
-      let x1, x2, y1, y2;
-      if (f === 0)      { x1 = c - t / 2; x2 = c + t / 2; y1 = off + i * seg; y2 = off + (i + 1) * seg; }
-      else if (f === 2) { x1 = c - t / 2; x2 = c + t / 2; y1 = p.h - off - (i + 1) * seg; y2 = p.h - off - i * seg; }
-      else if (f === 3) { y1 = c - t / 2; y2 = c + t / 2; x1 = off + i * seg; x2 = off + (i + 1) * seg; }
-      else              { y1 = c - t / 2; y2 = c + t / 2; x1 = p.w - off - (i + 1) * seg; x2 = p.w - off - i * seg; }
-      d += 'M' + fmtMm(dx + x1) + ' ' + fmtMm(dy + y1) +
-           'L' + fmtMm(dx + x2) + ' ' + fmtMm(dy + y1) +
-           'L' + fmtMm(dx + x2) + ' ' + fmtMm(dy + y2) +
-           'L' + fmtMm(dx + x1) + ' ' + fmtMm(dy + y2) + 'Z';
-    }
+  rects.forEach(r => {
+    d += 'M' + fmtMm(dx + r[0]) + ' ' + fmtMm(dy + r[1]) +
+         'L' + fmtMm(dx + r[2]) + ' ' + fmtMm(dy + r[1]) +
+         'L' + fmtMm(dx + r[2]) + ' ' + fmtMm(dy + r[3]) +
+         'L' + fmtMm(dx + r[0]) + ' ' + fmtMm(dy + r[3]) + 'Z';
   });
   return d;
 }
 
-// Label position beside a wall hole column, oriented like the holes.
-function holeLabelPos(p, c0, t, hd, labelSize, off) {
-  const f = p.pols.indexOf('flat');
-  const C = wallHoleCenter(p, c0, t), lo = t / 2 + labelSize;
-  if (f === 0) return [C + lo, off + hd / 2];
-  if (f === 2) return [C + lo, p.h - off - hd / 2];
-  if (f === 3) return [off + hd / 2, C + lo];
-  return [p.w - off - hd / 2, C + lo];
+// Closed outline of one divider: body bodyLen wide, hL and hR tall at its
+// left and right inner face, drawn with a t margin left and right for the
+// end tabs. Unequal heights (sloped boxes) slant the top edge linearly
+// across the body; the end strips stay level so the tabs match the wall
+// holes. `slots` are cross positions (inner coordinates along the body);
+// slotFrom tells which edge the half-lap slots open to — top slots reach
+// halfway of the LOCAL height, mating the bottom slots of the crossing
+// divider. `tabs` (optional) are bottom anchor tabs sticking out t below.
+function dividerPoints(bodyLen, t, hL, hR, finger, slots, slotFrom, tabs) {
+  const HD = Math.max(hL, hR);
+  const yTop = x => HD - hL + (hL - hR) * (x - t) / bodyLen;
+  const nL = divSegments(hL, finger), segL = hL / nL;
+  const nR = divSegments(hR, finger), segR = hR / nR;
+  const x = (i, base, out) => (i % 2 === 1 ? out : base);
+  const pts = [[t, HD - hL]];
+  // top edge, left to right, following the slant
+  if (slotFrom === 'top') slots.forEach(c => {
+    const x1 = t + c - t / 2, x2 = t + c + t / 2;
+    const mid = (yTop(t + c) + HD) / 2;
+    pts.push([x1, yTop(x1)], [x1, mid], [x2, mid], [x2, yTop(x2)]);
+  });
+  pts.push([t + bodyLen, HD - hR]);
+  // right end, downward, tabs out to t + bodyLen + t
+  for (let i = 1; i < nR; i++) {
+    const a = x(i - 1, t + bodyLen, t + bodyLen + t), b = x(i, t + bodyLen, t + bodyLen + t);
+    if (a !== b) pts.push([a, HD - hR + i * segR], [b, HD - hR + i * segR]);
+  }
+  pts.push([t + bodyLen, HD]);
+  // bottom edge, right to left: half-lap slots (up) and anchor tabs (down)
+  const feats = (tabs || []).map(a => ({ c: a.c, w: a.w, y: HD + t }));
+  if (slotFrom === 'bottom') slots.forEach(c => feats.push({ c, w: t, y: HD / 2 }));
+  feats.sort((a, b) => b.c - a.c);
+  feats.forEach(f => {
+    pts.push([t + f.c + f.w / 2, HD], [t + f.c + f.w / 2, f.y],
+             [t + f.c - f.w / 2, f.y], [t + f.c - f.w / 2, HD]);
+  });
+  pts.push([t, HD]);
+  // left end, upward, tabs out to 0
+  for (let i = nL - 1; i >= 1; i--) {
+    const a = x(i, t, 0), b = x(i - 1, t, 0);
+    if (a !== b) pts.push([a, HD - hL + i * segL], [b, HD - hL + i * segL]);
+  }
+  return pts;
+}
+
+// The divider outline as an SVG path.
+function dividerPath(bodyLen, t, hL, hR, finger, slots, slotFrom, tabs, dx, dy) {
+  let d = '';
+  dividerPoints(bodyLen, t, hL, hR, finger, slots, slotFrom, tabs).forEach((p, i) => {
+    d += (i === 0 ? 'M' : 'L') + fmtMm(p[0] + dx) + ' ' + fmtMm(p[1] + dy);
+  });
+  return d + 'Z';
+}
+
+// Full closed outline of a wall panel — all four edges, ignoring the 2D
+// layout's `skip` optimization; the 3D preview needs the complete shape.
+function panelOutline(w, h, t, finger, pols, drop) {
+  const pts = [];
+  panelEdges(w, h, t, finger, pols, drop).forEach(pl => {
+    for (let i = 0; i < pl.length - 1; i++) pts.push(pl[i]);
+  });
+  return pts;
+}
+
+// Whether the wall's drawn hole axis runs opposite to its physical axis
+// under number-guided assembly (drawn faces out, corner numbers matched).
+// The corner number on the drawn-left edge is compared with the corner
+// that physically sits at the axis zero: the width axis starts at joint 8
+// on the front wall and 7 on the back one, the length axis at joint 5 on
+// the right wall and 8 on the left one.
+function wallMirrored(p) {
+  const zero = { front: 8, back: 7, right: 5, left: 8 }[p.role];
+  return p.nums[3] !== zero;
+}
+
+// Center of a wall hole column along the drawn hole axis.
+function wallHoleCenter(p, c0, t) {
+  return wallMirrored(p) ? p.w - t - c0 : t + c0;
+}
+
+// Through holes in a wall panel for the divider end tabs, as rectangles
+// in panel coordinates. `items` are hole columns: {c: divider position in
+// inner coordinates, hd: divider height at this wall, off: gap between
+// the wall's rim and the divider top}. Measured from the bottom edge
+// (off = wall height - t - hd), so the columns stay right on sloped
+// walls too.
+function wallHoleRects(p, items, t, finger) {
+  const rects = [];
+  items.forEach(it => {
+    const c = wallHoleCenter(p, it.c, t);
+    const n = divSegments(it.hd, finger), seg = it.hd / n;
+    for (let i = 1; i < n; i += 2) {
+      rects.push([c - t / 2, it.off + i * seg, c + t / 2, it.off + (i + 1) * seg]);
+    }
+  });
+  return rects;
+}
+
+// Label position beside a wall hole column.
+function holeLabelPos(p, it, t, labelSize) {
+  return [wallHoleCenter(p, it.c, t) + t / 2 + labelSize, it.off + it.hd / 2];
 }
 
 // Main entry point: returns { svg, warnings }
@@ -168,17 +217,35 @@ function generateDivBox(params) {
     return { svg: '', warnings: ['Compartment ratios must be positive numbers separated by commas.'] };
   }
 
-  const iW = W - 2 * t, iL = L - 2 * t;
-  // Divider height: full (flush with the rim) unless a lower one is given.
-  // Dividers stand on the bottom panel, so lower ones shift the wall hole
-  // columns down by the difference `off`.
-  const full = H - t;
-  let hd = params.divH > 0 ? params.divH : full;
-  if (hd > full) {
-    warnings.push('Divider height exceeds the inner height — using ' + full.toFixed(1) + ' mm.');
-    hd = full;
+  // Sloped top: the front wall lower than the back one; the side walls
+  // become trapezoids and flush dividers follow the slant.
+  let slope = params.slope === true;
+  let Hf = H;
+  if (slope) {
+    Hf = params.frontH;
+    if (!(Hf > 0)) return { svg: '', warnings: ['Front height must be a positive number.'] };
+    if (Hf >= H) {
+      warnings.push('Front height is not lower than the box height — slope ignored.');
+      slope = false;
+      Hf = H;
+    } else if (2 * t >= Hf) {
+      return { svg: '', warnings: ['Plywood thickness is too large for the front height.'] };
+    }
   }
-  const off = full - hd;
+
+  const iW = W - 2 * t, iL = L - 2 * t;
+  // Divider height: flush with the (possibly slanted) rim unless a lower
+  // one is given. Dividers stand on the bottom panel, so lower ones shift
+  // the wall hole columns down.
+  const full = H - t;       // inner height at the back
+  const fullF = Hf - t;     // inner height at the front
+  const slant = (full - fullF) / L; // height gain per mm of outer length
+  const flush = !(params.divH > 0);
+  let hd = flush ? full : params.divH;
+  if (!flush && hd > fullF) {
+    warnings.push('Divider height exceeds the inner height — using ' + fullF.toFixed(1) + ' mm.');
+    hd = fullF;
+  }
   const colS = compSizes(iW, params.cols, rw.arr, t);
   const rowS = compSizes(iL, params.rows, rl.arr, t);
   if (!colS || !rowS) {
@@ -186,9 +253,14 @@ function generateDivBox(params) {
   }
   const cX = divCenters(colS, t); // lengthwise dividers, positions along inner width
   const cY = divCenters(rowS, t); // widthwise dividers, positions along inner length
-  if (cX.length + cY.length === 0) {
-    warnings.push('No dividers — this is a plain box; the box generator does it with nicer layouts.');
-  }
+
+  // Divider heights at the inner faces; the slant is linear between them,
+  // so a widthwise divider's height equals the lengthwise dividers' height
+  // at its crossing position.
+  const hdF = flush ? fullF + slant * t : hd; // at the front inner face
+  const hdB = flush ? full - slant * t : hd;  // at the back inner face
+  const hW = cY.map(c => flush ? hdF + (hdB - hdF) * c / iL : hd);
+
   const minComp = Math.min(...colS, ...rowS);
   if (minComp < 2 * t) {
     warnings.push('The smallest compartment is ' + minComp.toFixed(1) + ' mm — barely wider than the material.');
@@ -198,17 +270,36 @@ function generateDivBox(params) {
   if (minSeg < t) {
     warnings.push('Fingers are narrower than the plywood thickness (' + minSeg.toFixed(1) + ' mm) — the joint will be fragile. Increase the finger width.');
   }
-  const divSeg = hd / divSegments(hd, finger);
+  if (finger * 3 > minLen) {
+    warnings.push('Finger width is large relative to the box — the minimum of 3 segments per edge is used.');
+  }
+  const divSeg = hdF / divSegments(hdF, finger);
   if (divSeg < t) {
     warnings.push('Divider tabs are narrower than the plywood thickness (' + divSeg.toFixed(1) + ' mm) — increase the finger width.');
   }
 
-  // The box panels come from the shared layout tables (boxgen.js), so the
-  // joined layouts cut shared edges in a single pass here too. The divider
-  // holes go into the walls by role; rotated panels get rotated holes.
+  // The box panels come from the shared layout tables (boxgen.js); the
+  // joined layout cuts shared edges in a single pass. The slope works in
+  // both layouts — with the bottoms aligned, the two panels at every
+  // shared vertical joint have the same height right there.
   const layout = params.layout || 'strip';
   const box = boxLayout(W, L, H, t, layout);
+  if (slope) {
+    box.panels.forEach(p => {
+      if (p.role === 'front') {
+        p.h = Hf;
+        if (layout === 'strip') p.y += H - Hf; // align the bottoms for tiling
+      }
+      else if (p.role === 'left') p.drop = [0, H - Hf];  // drawn left = back
+      else if (p.role === 'right') p.drop = [H - Hf, 0]; // drawn left = front
+    });
+  }
   const m = 5, g = 5;
+
+  // Optional anchoring of the dividers into the bottom panel.
+  const anchor = params.anchor === true;
+  const tabsL = anchor && cX.length ? anchorTabs(iL, cY, t, finger) : null;
+  const tabsW = anchor && cY.length ? anchorTabs(iW, cX, t, finger) : null;
 
   // Joint numbers: 1–8 belong to the outer box (see boxLayout); from 9 on,
   // each divider end pairs with its wall hole column.
@@ -218,34 +309,65 @@ function generateDivBox(params) {
   const numWR = cY.map((c, i) => 10 + 2 * cX.length + 2 * i);// widthwise ↔ right
 
   let cuts = '', texts = '';
+  const parts = []; // 3D preview parts, one per panel/divider
   const txt = (x, y, num) => {
     texts += '<text x="' + fmtMm(x) + '" y="' + fmtMm(y) + '" font-size="' + labelSize +
       '" text-anchor="middle" dominant-baseline="middle">' + num + '</text>\n';
   };
 
   box.panels.forEach(p => {
-    const centers = (p.role === 'front' || p.role === 'back') ? cX
-      : (p.role === 'left' || p.role === 'right') ? cY : null;
+    // Hole columns for this wall: divider height at this wall's face and
+    // the gap below the wall's rim.
+    const items = (p.role === 'front' || p.role === 'back')
+      ? cX.map(c => { const h = p.role === 'front' ? hdF : hdB; return { c, hd: h, off: p.h - t - h }; })
+      : (p.role === 'left' || p.role === 'right')
+        ? cY.map((c, i) => ({ c, hd: hW[i], off: p.h - t - hW[i] }))
+        : null;
     const wallNums = p.role === 'front' ? numLF : p.role === 'back' ? numLB
       : p.role === 'left' ? numWL : p.role === 'right' ? numWR : null;
-    let d = '';
-    if (p.skip !== 'all') d += buildPath(panelEdges(p.w, p.h, t, finger, p.pols), m + p.x, m + p.y, p);
-    if (centers) d += wallHoles(p, centers, t, hd, finger, m + p.x, m + p.y, off);
-    if (d) cuts += '<path d="' + d + '"/>\n';
+    const holeRects = items ? wallHoleRects(p, items, t, finger)
+      : (p.role === 'bottom' && anchor) ? bottomSlotRects(cX, cY, tabsL || [], tabsW || [], t)
+      : [];
+    let d = buildPath(panelEdges(p.w, p.h, t, finger, p.pols, p.drop), m + p.x, m + p.y, p);
+    d += rectsPath(holeRects, m + p.x, m + p.y);
+    cuts += '<path d="' + d + '"/>\n';
+
+    // 3D part: the full outline (ignoring `skip`) in assembled-space 2D
+    // coordinates — mirrored panels get unmirrored, sy points up from the
+    // outer bottom. See js/box3d.js for axis/at.
+    const mir = p.role !== 'bottom' && wallMirrored(p);
+    const map = p.role === 'bottom'
+      ? q => [q[0], q[1]]
+      : q => [mir ? p.w - q[0] : q[0], p.h - q[1]];
+    const AT = {
+      bottom: { axis: 'z', at: [0, 0, 0] },
+      front:  { axis: 'y', at: [0, t, 0] },
+      back:   { axis: 'y', at: [0, L, 0] },
+      left:   { axis: 'x', at: [0, 0, 0] },
+      right:  { axis: 'x', at: [W - t, 0, 0] },
+    }[p.role];
+    parts.push({
+      role: p.role, t, axis: AT.axis, at: AT.at,
+      pts: panelOutline(p.w, p.h, t, finger, p.pols, p.drop).map(map),
+      holes: holeRects.map(r =>
+        [[r[0], r[1]], [r[2], r[1]], [r[2], r[3]], [r[0], r[3]]].map(map)),
+    });
     if (labels) {
-      // Outer box joint numbers at the middle of each edge (as in boxgen).
+      // Outer box joint numbers at the middle of each edge (as in boxgen);
+      // on trapezoid walls the vertical edges are shortened by the drop.
       const inset = t + labelSize;
+      const dl = p.drop ? p.drop[0] : 0, dr = p.drop ? p.drop[1] : 0;
       const at = [
         [p.w / 2, inset],
-        [p.w - inset, p.h / 2],
+        [p.w - inset, (dr + p.h) / 2],
         [p.w / 2, p.h - inset],
-        [inset, p.h / 2],
+        [inset, (dl + p.h) / 2],
       ];
       p.nums.forEach((num, e) => {
         if (num !== null) txt(m + p.x + at[e][0], m + p.y + at[e][1], num);
       });
-      if (centers) centers.forEach((c, i) => {
-        const q = holeLabelPos(p, c, t, hd, labelSize, off);
+      if (items) items.forEach((it, i) => {
+        const q = holeLabelPos(p, it, t, labelSize);
         txt(m + p.x + q[0], m + p.y + q[1], wallNums[i]);
       });
     }
@@ -256,31 +378,44 @@ function generateDivBox(params) {
   let y = box.totalH - 2 * m;
   const endInset = 2 * t + labelSize;
 
-  // Lengthwise dividers (body iL, crossed by widthwise ones at cY).
+  // Lengthwise dividers (body iL, crossed by widthwise ones at cY); with a
+  // slope their front end (drawn left) is the lower one.
+  const HD = Math.max(hdF, hdB);
   if (cX.length) {
     y += g;
     cX.forEach((c, i) => {
       const x = i * (iL + 2 * t + g);
-      cuts += '<path d="' + dividerPath(iL, t, hd, finger, cY, 'top', m + x, m + y) + '"/>\n';
+      cuts += '<path d="' + dividerPath(iL, t, hdF, hdB, finger, cY, 'top', tabsL, m + x, m + y) + '"/>\n';
+      parts.push({
+        role: 'divider', t, axis: 'x', at: [t + c - t / 2, 0, 0],
+        pts: dividerPoints(iL, t, hdF, hdB, finger, cY, 'top', tabsL).map(q => [q[0], t + HD - q[1]]),
+        holes: [],
+      });
       if (labels) {
-        txt(m + x + endInset, m + y + hd / 2, numLF[i]);
-        txt(m + x + iL + 2 * t - endInset, m + y + hd / 2, numLB[i]);
+        txt(m + x + endInset, m + y + HD - hdF / 2, numLF[i]);
+        txt(m + x + iL + 2 * t - endInset, m + y + HD - hdB / 2, numLB[i]);
       }
     });
-    y += hd;
+    y += HD + (anchor ? t : 0);
   }
-  // Widthwise dividers (body iW, crossed by lengthwise ones at cX).
+  // Widthwise dividers (body iW, crossed by lengthwise ones at cX); each
+  // is level, at the slant height of its own position.
   if (cY.length) {
     y += g;
     cY.forEach((c, i) => {
       const x = i * (iW + 2 * t + g);
-      cuts += '<path d="' + dividerPath(iW, t, hd, finger, cX, 'bottom', m + x, m + y) + '"/>\n';
+      cuts += '<path d="' + dividerPath(iW, t, hW[i], hW[i], finger, cX, 'bottom', tabsW, m + x, m + y) + '"/>\n';
+      parts.push({
+        role: 'divider', t, axis: 'y', at: [0, t + c + t / 2, 0],
+        pts: dividerPoints(iW, t, hW[i], hW[i], finger, cX, 'bottom', tabsW).map(q => [q[0], t + hW[i] - q[1]]),
+        holes: [],
+      });
       if (labels) {
-        txt(m + x + endInset, m + y + hd / 2, numWL[i]);
-        txt(m + x + iW + 2 * t - endInset, m + y + hd / 2, numWR[i]);
+        txt(m + x + endInset, m + y + hW[i] / 2, numWL[i]);
+        txt(m + x + iW + 2 * t - endInset, m + y + hW[i] / 2, numWR[i]);
       }
     });
-    y += hd;
+    y += Math.max(...hW) + (anchor ? t : 0);
   }
 
   const rowW = Math.max(
@@ -293,5 +428,5 @@ function generateDivBox(params) {
   const body =
     '<g fill="none" stroke="' + color + '" stroke-width="' + stroke + '">\n' + cuts + '</g>\n' +
     (texts ? '<g fill="' + numColor + '" font-family="sans-serif">\n' + texts + '</g>\n' : '');
-  return { svg: svgDoc(totalW, totalH, body), warnings };
+  return { svg: svgDoc(totalW, totalH, body), warnings, parts3d: { parts, W, L, H } };
 }

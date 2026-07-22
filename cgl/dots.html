@@ -10,77 +10,79 @@
 <aside>
   <a class="back" href="index.html">&larr; CHUPCKO's Garage Lab</a>
   <h1>Dot patterns</h1>
-  <label for="pattern">Pattern</label>
-  <select id="pattern">
+  <label for="pattern" title="Lattice of the dots: square grid; staggered (every other row shifted by half a spacing, row height kept); equilateral triangular; or the vertices of a hexagonal honeycomb.">Pattern</label>
+  <select id="pattern" title="Lattice of the dots: square grid; staggered (every other row shifted by half a spacing, row height kept); equilateral triangular; or the vertices of a hexagonal honeycomb.">
     <option value="square" selected>Square grid</option>
+    <option value="stagger">Staggered — rows shifted by half</option>
     <option value="triangular">Triangular grid</option>
     <option value="hexagonal">Hexagonal grid</option>
   </select>
-  <label for="mode">Size given as</label>
-  <select id="mode">
+  <label for="mode" title="Give the area to fill (as many dots as fit, centered) or exact dot counts (the area follows).">Size given as</label>
+  <select id="mode" title="Give the area to fill (as many dots as fit, centered) or exact dot counts (the area follows).">
     <option value="area" selected>Area dimensions</option>
     <option value="count">Dot counts</option>
   </select>
   <div id="areaRow">
-    <label for="width">Area width (mm)</label>
-    <input type="number" id="width" value="100" min="1" step="1">
-    <label for="height">Area height (mm)</label>
-    <input type="number" id="height" value="100" min="1" step="1">
+    <label for="width" title="Width of the area to fill with dots (mm).">Area width (mm)</label>
+    <input type="number" id="width" value="100" min="1" step="1" title="Width of the area to fill with dots (mm).">
+    <label for="height" title="Height of the area to fill with dots (mm).">Area height (mm)</label>
+    <input type="number" id="height" value="100" min="1" step="1" title="Height of the area to fill with dots (mm).">
   </div>
   <div id="countRow">
-    <label for="nx">Dots across</label>
-    <input type="number" id="nx" value="10" min="1" step="1">
-    <label for="ny">Dots down</label>
-    <input type="number" id="ny" value="10" min="1" step="1">
+    <label for="nx" title="Number of dots in a row. For the hexagonal pattern this counts hexagons — the dots are their vertices.">Dots across</label>
+    <input type="number" id="nx" value="10" min="1" step="1" title="Number of dots in a row. For the hexagonal pattern this counts hexagons — the dots are their vertices.">
+    <label for="ny" title="Number of rows. For the hexagonal pattern this counts hexagons — the dots are their vertices.">Dots down</label>
+    <input type="number" id="ny" value="10" min="1" step="1" title="Number of rows. For the hexagonal pattern this counts hexagons — the dots are their vertices.">
     <div class="hint" id="countHexHint">
       For the hexagonal pattern the counts are hexagons, not dots — the dots
       sit on their vertices.
     </div>
   </div>
-  <label for="spacing">Dot spacing (mm, center to center)</label>
-  <input type="number" id="spacing" value="10" min="0.1" step="0.5">
-  <label for="diameter">Dot diameter (mm)</label>
-  <input type="number" id="diameter" value="2" min="0.1" step="0.1">
-  <label for="style">Dot style</label>
-  <select id="style">
+  <label for="spacingX" title="Center distance between neighboring dots in a row (mm).">Spacing across (mm, center to center)</label>
+  <input type="number" id="spacingX" value="10" min="0.1" step="0.5" title="Center distance between neighboring dots in a row (mm).">
+  <div id="spacingYRow">
+    <label for="spacingY" title="Center distance between rows (mm). Applies to the square and staggered patterns; triangular and hexagonal rows follow from the spacing across.">Spacing down (mm, center to center)</label>
+    <input type="number" id="spacingY" value="10" min="0.1" step="0.5" title="Center distance between rows (mm). Applies to the square and staggered patterns; triangular and hexagonal rows follow from the spacing across.">
+  </div>
+  <label for="diameter" title="Diameter of every dot (mm).">Dot diameter (mm)</label>
+  <input type="number" id="diameter" value="2" min="0.1" step="0.1" title="Diameter of every dot (mm).">
+  <label for="style" title="Outline circles for cutting/drilling holes, filled ones for engraving.">Dot style</label>
+  <select id="style" title="Outline circles for cutting/drilling holes, filled ones for engraving.">
     <option value="cut" selected>Outline (cut)</option>
     <option value="fill">Filled (engrave)</option>
   </select>
-  <label for="stroke">Cut line width (mm)</label>
-  <input type="number" id="stroke" value="0.08" min="0.01" step="0.01">
-  <label for="color">Dot color</label>
-  <select id="color">
+  <label for="stroke" title="Stroke width of the cut lines in the SVG (mm); laser software usually wants hairlines.">Cut line width (mm)</label>
+  <input type="number" id="stroke" value="0.08" min="0.01" step="0.01" title="Stroke width of the cut lines in the SVG (mm); laser software usually wants hairlines.">
+  <label for="color" title="Color of the dots — laser software assigns operations by color.">Dot color</label>
+  <select id="color" title="Color of the dots — laser software assigns operations by color.">
     <option value="#000000" selected>Black</option>
     <option value="#ff0000">Red</option>
     <option value="#00ff00">Green</option>
     <option value="#0000ff">Blue</option>
   </select>
-  <div class="chk">
+  <div class="chk" title="Draw a rectangle around the pattern; the pattern is centered inside it.">
     <input type="checkbox" id="withBox">
     <label for="withBox">Box around pattern</label>
   </div>
   <div id="boxRow">
-    <button type="button" id="fitBox" class="secondary">Fit box to pattern</button>
-    <label for="boxW">Box width (mm)</label>
-    <input type="number" id="boxW" value="150" min="1" step="1">
-    <label for="boxH">Box height (mm)</label>
-    <input type="number" id="boxH" value="150" min="1" step="1">
-    <label for="boxColor">Box color</label>
-    <select id="boxColor">
+    <button type="button" id="fitBox" class="secondary" title="Set the box size to the pattern extent plus padding, rounded up to a round number.">Fit box to pattern</button>
+    <label for="boxW" title="Width of the surrounding box (mm).">Box width (mm)</label>
+    <input type="number" id="boxW" value="150" min="1" step="1" title="Width of the surrounding box (mm).">
+    <label for="boxH" title="Height of the surrounding box (mm).">Box height (mm)</label>
+    <input type="number" id="boxH" value="150" min="1" step="1" title="Height of the surrounding box (mm).">
+    <label for="boxColor" title="Color of the box rectangle — laser software assigns operations by color.">Box color</label>
+    <select id="boxColor" title="Color of the box rectangle — laser software assigns operations by color.">
       <option value="#000000" selected>Black</option>
       <option value="#ff0000">Red</option>
       <option value="#00ff00">Green</option>
       <option value="#0000ff">Blue</option>
     </select>
   </div>
-  <button id="download">Download SVG</button>
+  <button id="download" title="Save the pattern as an SVG file.">Download SVG</button>
   <div id="warnings"></div>
   <div class="hint">
-    Dots on the vertices of a square, triangular or hexagonal lattice.
-    Spacing is the center distance between neighboring dots. Give either the
-    area to fill (as many dots as fit, centered) or exact dot counts (the
-    area follows). Dots can be cut outlines (drill holes) or filled circles
-    (engraving). The pattern is centered inside the optional box.
+    Dots on a lattice — drill marks, ventilation or decoration. Hover any
+    option for details.
   </div>
 </aside>
 <main>

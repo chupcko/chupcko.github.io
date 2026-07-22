@@ -17,20 +17,26 @@ function hexVerts(s) {
   return [[0, -s], [w, -s / 2], [w, s / 2], [0, s], [-w, s / 2], [-w, -s / 2]];
 }
 
-// Pattern points with pitch s that fall inside the region [0,W]×[0,H].
-function areaPoints(pattern, W, H, s) {
+// Pattern points that fall inside the region [0,W]×[0,H]. Column pitch is
+// sx; row pitch is sy for the square/staggered patterns, while the
+// triangular and hexagonal lattices are rigid — their row spacing follows
+// from sx and sy is ignored.
+function areaPoints(pattern, W, H, sx, sy) {
   const eps = 1e-6;
   const pts = [];
+  const s = sx;
   if (pattern === 'square') {
-    for (let j = 0; j * s <= H + eps; j++)
-      for (let i = 0; i * s <= W + eps; i++)
-        pts.push([i * s, j * s]);
-  } else if (pattern === 'triangular') {
-    const h = s * SQRT3 / 2;
+    for (let j = 0; j * sy <= H + eps; j++)
+      for (let i = 0; i * sx <= W + eps; i++)
+        pts.push([i * sx, j * sy]);
+  } else if (pattern === 'triangular' || pattern === 'stagger') {
+    // Shifted rows: equilateral for triangular, sy apart for the staggered
+    // (brick bond) variant.
+    const h = pattern === 'triangular' ? sx * SQRT3 / 2 : sy;
     for (let j = 0; j * h <= H + eps; j++) {
-      const off = (j % 2) * s / 2;
-      for (let i = 0; off + i * s <= W + eps; i++)
-        pts.push([off + i * s, j * h]);
+      const off = (j % 2) * sx / 2;
+      for (let i = 0; off + i * sx <= W + eps; i++)
+        pts.push([off + i * sx, j * h]);
     }
   } else { // hexagonal: vertices of a honeycomb of pointy-top hexagons
     const w = s * SQRT3, verts = hexVerts(s);
@@ -52,20 +58,22 @@ function areaPoints(pattern, W, H, s) {
   return pts;
 }
 
-// Pattern points for an exact count: nx × ny dots (square/triangular) or
-// nx × ny hexagons (hexagonal — the dots are their vertices).
-function countPoints(pattern, nx, ny, s) {
+// Pattern points for an exact count: nx × ny dots (square/staggered/
+// triangular) or nx × ny hexagons (hexagonal — the dots are their
+// vertices). Pitches as in areaPoints.
+function countPoints(pattern, nx, ny, sx, sy) {
   const pts = [];
+  const s = sx;
   if (pattern === 'square') {
     for (let j = 0; j < ny; j++)
       for (let i = 0; i < nx; i++)
-        pts.push([i * s, j * s]);
-  } else if (pattern === 'triangular') {
-    const h = s * SQRT3 / 2;
+        pts.push([i * sx, j * sy]);
+  } else if (pattern === 'triangular' || pattern === 'stagger') {
+    const h = pattern === 'triangular' ? sx * SQRT3 / 2 : sy;
     for (let j = 0; j < ny; j++) {
-      const off = (j % 2) * s / 2;
+      const off = (j % 2) * sx / 2;
       for (let i = 0; i < nx; i++)
-        pts.push([off + i * s, j * h]);
+        pts.push([off + i * sx, j * h]);
     }
   } else {
     const w = s * SQRT3, verts = hexVerts(s);
@@ -90,17 +98,22 @@ function countPoints(pattern, nx, ny, s) {
 function generateDots(params) {
   const warnings = [];
   const pattern = params.pattern || 'square';
-  const s = params.spacing;
+  const sx = params.spacingX;
+  const rowPitch = pattern === 'square' || pattern === 'stagger';
+  const sy = rowPitch ? params.spacingY : sx;
   const d = params.diameter;
   const stroke = params.stroke > 0 ? params.stroke : 0.08;
   const color = params.color || COLORS.black;
   const boxColor = params.boxColor || COLORS.black;
   const filled = params.style === 'fill';
 
-  if (!(s > 0 && d > 0)) {
-    return { svg: '', warnings: ['Spacing and dot diameter must be positive numbers.'] };
+  if (!(sx > 0 && sy > 0 && d > 0)) {
+    return { svg: '', warnings: ['Spacings and dot diameter must be positive numbers.'] };
   }
-  if (d > s) warnings.push('Dots are larger than the spacing — they overlap.');
+  const near = pattern === 'square' ? Math.min(sx, sy)
+    : pattern === 'stagger' ? Math.min(sx, Math.hypot(sx / 2, sy))
+    : sx;
+  if (d > near) warnings.push('Dots are larger than the spacing — they overlap.');
 
   let pts;
   if (params.mode === 'count') {
@@ -111,16 +124,16 @@ function generateDots(params) {
     if (nx * ny > 20000) {
       return { svg: '', warnings: ['Too many dots (' + nx * ny + ') — reduce the counts.'] };
     }
-    pts = countPoints(pattern, nx, ny, s);
+    pts = countPoints(pattern, nx, ny, sx, sy);
   } else {
     const W = params.width, H = params.height;
     if (!(W > 0 && H > 0)) {
       return { svg: '', warnings: ['Area dimensions must be positive numbers.'] };
     }
-    if ((W / s + 2) * (H / s + 2) > 100000) {
-      return { svg: '', warnings: ['Too many dots — increase the spacing.'] };
+    if ((W / sx + 2) * (H / sy + 2) > 100000) {
+      return { svg: '', warnings: ['Too many dots — increase the spacings.'] };
     }
-    pts = areaPoints(pattern, W, H, s);
+    pts = areaPoints(pattern, W, H, sx, sy);
   }
   if (!pts.length) {
     return { svg: '', warnings: warnings.concat('No dots fit the given area.') };
