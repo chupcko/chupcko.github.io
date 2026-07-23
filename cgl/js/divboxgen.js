@@ -95,10 +95,11 @@ function rectsPath(rects, dx, dy) {
 // left and right inner face, drawn with a t margin left and right for the
 // end tabs. Unequal heights (sloped boxes) slant the top edge linearly
 // across the body; the end strips stay level so the tabs match the wall
-// holes. `slots` are cross positions (inner coordinates along the body);
-// slotFrom tells which edge the half-lap slots open to — top slots reach
-// halfway of the LOCAL height, mating the bottom slots of the crossing
-// divider. `tabs` (optional) are bottom anchor tabs sticking out t below.
+// holes. `slots` are half-lap crossings: {c: position in inner coordinates
+// along the body, z: the mate plane's height above the bottom} — slotFrom
+// tells which edge the slots open to, top slots cut down to z, bottom ones
+// up to z, so the two dividers of a crossing interlock flush. `tabs`
+// (optional) are bottom anchor tabs sticking out t below.
 function dividerPoints(bodyLen, t, hL, hR, finger, slots, slotFrom, tabs) {
   const HD = Math.max(hL, hR);
   const yTop = x => HD - hL + (hL - hR) * (x - t) / bodyLen;
@@ -107,9 +108,9 @@ function dividerPoints(bodyLen, t, hL, hR, finger, slots, slotFrom, tabs) {
   const x = (i, base, out) => (i % 2 === 1 ? out : base);
   const pts = [[t, HD - hL]];
   // top edge, left to right, following the slant
-  if (slotFrom === 'top') slots.forEach(c => {
-    const x1 = t + c - t / 2, x2 = t + c + t / 2;
-    const mid = (yTop(t + c) + HD) / 2;
+  if (slotFrom === 'top') slots.forEach(s => {
+    const x1 = t + s.c - t / 2, x2 = t + s.c + t / 2;
+    const mid = HD - s.z;
     pts.push([x1, yTop(x1)], [x1, mid], [x2, mid], [x2, yTop(x2)]);
   });
   pts.push([t + bodyLen, HD - hR]);
@@ -121,7 +122,7 @@ function dividerPoints(bodyLen, t, hL, hR, finger, slots, slotFrom, tabs) {
   pts.push([t + bodyLen, HD]);
   // bottom edge, right to left: half-lap slots (up) and anchor tabs (down)
   const feats = (tabs || []).map(a => ({ c: a.c, w: a.w, y: HD + t }));
-  if (slotFrom === 'bottom') slots.forEach(c => feats.push({ c, w: t, y: HD / 2 }));
+  if (slotFrom === 'bottom') slots.forEach(s => feats.push({ c: s.c, w: t, y: HD - s.z }));
   feats.sort((a, b) => b.c - a.c);
   feats.forEach(f => {
     pts.push([t + f.c + f.w / 2, HD], [t + f.c + f.w / 2, f.y],
@@ -239,7 +240,6 @@ function generateDivBox(params) {
   // the wall hole columns down.
   const full = H - t;       // inner height at the back
   const fullF = Hf - t;     // inner height at the front
-  const slant = (full - fullF) / L; // height gain per mm of outer length
   const flush = !(params.divH > 0);
   let hd = flush ? full : params.divH;
   if (!flush && hd > fullF) {
@@ -254,12 +254,16 @@ function generateDivBox(params) {
   const cX = divCenters(colS, t); // lengthwise dividers, positions along inner width
   const cY = divCenters(rowS, t); // widthwise dividers, positions along inner length
 
-  // Divider heights at the inner faces; the slant is linear between them,
-  // so a widthwise divider's height equals the lengthwise dividers' height
-  // at its crossing position.
-  const hdF = flush ? fullF + slant * t : hd; // at the front inner face
-  const hdB = flush ? full - slant * t : hd;  // at the back inner face
-  const hW = cY.map(c => flush ? hdF + (hdB - hdF) * c / iL : hd);
+  // Divider heights at the inner faces. The trapezoid side walls' top edge
+  // runs from the front wall's top at the front inner face to the back
+  // wall's top at the back one (panelEdges draws the slant between the
+  // joint-inset points), so flush lengthwise dividers use exactly those
+  // heights — the same line. A widthwise divider is level; it is sized to
+  // the slant at the FRONT face of its thickness, so its top edge touches
+  // the slanted rim there and nothing pokes above it.
+  const hdF = flush ? fullF : hd; // at the front inner face
+  const hdB = flush ? full : hd;  // at the back inner face
+  const hW = cY.map(c => flush ? hdF + (hdB - hdF) * (c - t / 2) / iL : hd);
 
   const minComp = Math.min(...colS, ...rowS);
   if (minComp < 2 * t) {
@@ -379,16 +383,18 @@ function generateDivBox(params) {
   const endInset = 2 * t + labelSize;
 
   // Lengthwise dividers (body iL, crossed by widthwise ones at cY); with a
-  // slope their front end (drawn left) is the lower one.
+  // slope their front end (drawn left) is the lower one. Crossings mate at
+  // half of the widthwise divider's height.
   const HD = Math.max(hdF, hdB);
+  const slotsL = cY.map((c, i) => ({ c, z: hW[i] / 2 }));
   if (cX.length) {
     y += g;
     cX.forEach((c, i) => {
       const x = i * (iL + 2 * t + g);
-      cuts += '<path d="' + dividerPath(iL, t, hdF, hdB, finger, cY, 'top', tabsL, m + x, m + y) + '"/>\n';
+      cuts += '<path d="' + dividerPath(iL, t, hdF, hdB, finger, slotsL, 'top', tabsL, m + x, m + y) + '"/>\n';
       parts.push({
         role: 'divider', t, axis: 'x', at: [t + c - t / 2, 0, 0],
-        pts: dividerPoints(iL, t, hdF, hdB, finger, cY, 'top', tabsL).map(q => [q[0], t + HD - q[1]]),
+        pts: dividerPoints(iL, t, hdF, hdB, finger, slotsL, 'top', tabsL).map(q => [q[0], t + HD - q[1]]),
         holes: [],
       });
       if (labels) {
@@ -404,10 +410,11 @@ function generateDivBox(params) {
     y += g;
     cY.forEach((c, i) => {
       const x = i * (iW + 2 * t + g);
-      cuts += '<path d="' + dividerPath(iW, t, hW[i], hW[i], finger, cX, 'bottom', tabsW, m + x, m + y) + '"/>\n';
+      const slotsW = cX.map(cc => ({ c: cc, z: hW[i] / 2 }));
+      cuts += '<path d="' + dividerPath(iW, t, hW[i], hW[i], finger, slotsW, 'bottom', tabsW, m + x, m + y) + '"/>\n';
       parts.push({
         role: 'divider', t, axis: 'y', at: [0, t + c + t / 2, 0],
-        pts: dividerPoints(iW, t, hW[i], hW[i], finger, cX, 'bottom', tabsW).map(q => [q[0], t + hW[i] - q[1]]),
+        pts: dividerPoints(iW, t, hW[i], hW[i], finger, slotsW, 'bottom', tabsW).map(q => [q[0], t + hW[i] - q[1]]),
         holes: [],
       });
       if (labels) {

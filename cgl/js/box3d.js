@@ -53,28 +53,53 @@ function ring(pts, cw) {
   return ((a < 0) === cw) ? pts : pts.slice().reverse();
 }
 
+// Edge lines built from the part's own loops (outline + holes) — both faces
+// of the plate plus the verticals at every corner. EdgesGeometry would try
+// to reconstruct them from the triangulation and draws artifacts on faces
+// with several holes.
+function loopEdges(loops, t) {
+  const pos = [];
+  loops.forEach(lp => {
+    for (let i = 0; i < lp.length; i++) {
+      const a = lp[i], b = lp[(i + 1) % lp.length];
+      pos.push(a[0], a[1], 0, b[0], b[1], 0,
+               a[0], a[1], t, b[0], b[1], t,
+               a[0], a[1], 0, a[0], a[1], t);
+    }
+  });
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  return g;
+}
+
+// Orient a geometry per the part's extrusion axis and place it.
+function place(geo, part, data) {
+  if (part.axis === 'y') {
+    geo.rotateX(Math.PI / 2);                        // shape → xz plane, extrude → -y
+  } else if (part.axis === 'x') {
+    geo.rotateX(Math.PI / 2);
+    geo.rotateZ(Math.PI / 2);                        // shape → yz plane, extrude → +x
+  }
+  geo.translate(part.at[0] - data.W / 2, part.at[1] - data.L / 2, part.at[2] - data.H / 2);
+  return geo;
+}
+
 let dist = 300;
 
 function update(data) {
   inner.clear();
   let divIdx = 0;
   data.parts.forEach(part => {
-    const shape = new THREE.Shape(ring(part.pts, false).map(p => new THREE.Vector2(p[0], p[1])));
-    part.holes.forEach(hl =>
-      shape.holes.push(new THREE.Path(ring(hl, true).map(p => new THREE.Vector2(p[0], p[1])))));
-    const geo = new THREE.ExtrudeGeometry(shape, { depth: part.t, bevelEnabled: false });
-    if (part.axis === 'y') {
-      geo.rotateX(Math.PI / 2);                        // shape → xz plane, extrude → -y
-    } else if (part.axis === 'x') {
-      geo.rotateX(Math.PI / 2);
-      geo.rotateZ(Math.PI / 2);                        // shape → yz plane, extrude → +x
-    }
-    geo.translate(part.at[0] - data.W / 2, part.at[1] - data.L / 2, part.at[2] - data.H / 2);
+    const outline = ring(part.pts, false);
+    const holes = part.holes.map(hl => ring(hl, true));
+    const shape = new THREE.Shape(outline.map(p => new THREE.Vector2(p[0], p[1])));
+    holes.forEach(hl => shape.holes.push(new THREE.Path(hl.map(p => new THREE.Vector2(p[0], p[1])))));
+    const geo = place(new THREE.ExtrudeGeometry(shape, { depth: part.t, bevelEnabled: false }), part, data);
     const color = part.role === 'divider'
       ? DIV_COLORS[divIdx++ % DIV_COLORS.length]
       : WALL_COLORS[part.role];
     inner.add(new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ color, side: THREE.DoubleSide })));
-    inner.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo, 25), edgeMat));
+    inner.add(new THREE.LineSegments(place(loopEdges([outline, ...holes], part.t), part, data), edgeMat));
   });
   dist = Math.max(data.W, data.L, data.H) * 2.4;
 }
@@ -114,5 +139,5 @@ function frame() {
 }
 frame();
 
-window.CglBox3d = { update };
+window.CglBox3d = { update, pivot };
 if (window.cglParts3d) update(window.cglParts3d);

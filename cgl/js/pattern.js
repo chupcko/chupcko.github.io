@@ -1,8 +1,8 @@
-// UI glue for the dot pattern page.
+// UI glue for the pattern page.
 'use strict';
 
 (function () {
-  const ids = ['width', 'height', 'nx', 'ny', 'spacingX', 'spacingY', 'diameter', 'stroke', 'boxW', 'boxH'];
+  const ids = ['width', 'height', 'nx', 'ny', 'spacingX', 'spacingY', 'offset', 'size', 'angle', 'stroke', 'boxW', 'boxH'];
   const el = id => document.getElementById(id);
   let lastSvg = '';
   let lastExt = null;
@@ -10,7 +10,8 @@
   function readParams() {
     const p = {};
     ids.forEach(id => p[id] = parseFloat(el(id).value));
-    p.pattern = el('pattern').value;
+    p.shape = el('shape').value;
+    p.grid = el('grid').value;
     p.mode = el('mode').value;
     p.style = el('style').value;
     p.color = el('color').value;
@@ -24,11 +25,13 @@
     el('areaRow').style.display = p.mode === 'area' ? '' : 'none';
     el('countRow').style.display = p.mode === 'count' ? '' : 'none';
     el('boxRow').style.display = p.withBox ? '' : 'none';
-    el('countHexHint').style.display =
-      p.mode === 'count' && p.pattern === 'hexagonal' ? '' : 'none';
+    el('angleRow').style.display = p.shape === 'circle' ? 'none' : '';
+    el('offsetRow').style.display = p.grid === 'stagger' ? '' : 'none';
     el('spacingYRow').style.display =
-      p.pattern === 'square' || p.pattern === 'stagger' ? '' : 'none';
-    const res = generateDots(p);
+      p.grid === 'square' || p.grid === 'stagger' ? '' : 'none';
+    el('countHexHint').style.display =
+      p.mode === 'count' && (p.grid === 'hexagonal' || p.grid === 'hexcenter') ? '' : 'none';
+    const res = generatePattern(p);
     lastSvg = res.svg;
     lastExt = res.ext || lastExt;
     el('warnings').innerHTML = res.warnings.map(w => '<div>⚠ ' + w + '</div>').join('');
@@ -43,7 +46,7 @@
   }
 
   ids.forEach(id => el(id).addEventListener('input', refresh));
-  ['pattern', 'mode', 'style', 'color', 'boxColor'].forEach(id =>
+  ['shape', 'grid', 'mode', 'style', 'color', 'boxColor'].forEach(id =>
     el(id).addEventListener('change', refresh));
   el('withBox').addEventListener('change', () => {
     if (el('withBox').checked) fitBox();
@@ -56,7 +59,7 @@
     const size = p.mode === 'count'
       ? p.nx + 'x' + p.ny
       : p.width + 'x' + p.height + 'mm';
-    downloadSvg(lastSvg, 'dots_' + p.pattern + '_' + size + '.svg');
+    downloadSvg(lastSvg, 'pattern_' + p.shape + '_' + p.grid + '_' + size + '.svg');
   });
   refresh();
 })();

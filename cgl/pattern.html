@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pattern generator</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="tool">
+<aside>
+  <a class="back" href="index.html">&larr; CHUPCKO's Garage Lab</a>
+  <h1>Patterns</h1>
+  <label for="shape" title="The repeated shape. Size means: circle — diameter; triangle and square — side; hexagon — width across flats.">Shape</label>
+  <select id="shape" title="The repeated shape. Size means: circle — diameter; triangle and square — side; hexagon — width across flats.">
+    <option value="circle" selected>Circle</option>
+    <option value="triangle">Triangle</option>
+    <option value="square">Square</option>
+    <option value="hexagon">Hexagon</option>
+  </select>
+  <label for="size" title="Shape size (mm): circle diameter, triangle/square side, hexagon width across flats.">Shape size (mm)</label>
+  <input type="number" id="size" value="8" min="0.1" step="0.5" title="Shape size (mm): circle diameter, triangle/square side, hexagon width across flats.">
+  <div id="angleRow">
+    <label for="angle" title="Rotation of every shape around its own center (degrees). The material-bridge warning takes the angle into account.">Shape angle (°)</label>
+    <input type="number" id="angle" value="0" min="-180" max="180" step="5" title="Rotation of every shape around its own center (degrees). The material-bridge warning takes the angle into account.">
+  </div>
+  <label for="grid" title="How the shapes are laid out: square grid; staggered (every other row shifted by the offset); equilateral triangular lattice; the vertices of a hexagonal honeycomb; or the honeycomb with its cell centers filled too.">Arrangement</label>
+  <select id="grid" title="How the shapes are laid out: square grid; staggered (every other row shifted by the offset); equilateral triangular lattice; the vertices of a hexagonal honeycomb; or the honeycomb with its cell centers filled too.">
+    <option value="square" selected>Square grid</option>
+    <option value="stagger">Staggered — rows shifted</option>
+    <option value="triangular">Triangular grid</option>
+    <option value="hexagonal">Hexagonal grid</option>
+    <option value="hexcenter">Hexagonal — with centers</option>
+  </select>
+  <div id="offsetRow">
+    <label for="offset" title="How far every other row shifts (mm); 0 = half the spacing across.">Row offset (mm, 0 = half spacing)</label>
+    <input type="number" id="offset" value="0" min="0" step="0.5" title="How far every other row shifts (mm); 0 = half the spacing across.">
+  </div>
+  <label for="mode" title="Give the area to fill (as many shapes as fit, centered) or exact counts (the area follows).">Size given as</label>
+  <select id="mode" title="Give the area to fill (as many shapes as fit, centered) or exact counts (the area follows).">
+    <option value="area" selected>Area dimensions</option>
+    <option value="count">Shape counts</option>
+  </select>
+  <div id="areaRow">
+    <label for="width" title="Width of the area to fill (mm).">Area width (mm)</label>
+    <input type="number" id="width" value="100" min="1" step="1" title="Width of the area to fill (mm).">
+    <label for="height" title="Height of the area to fill (mm).">Area height (mm)</label>
+    <input type="number" id="height" value="100" min="1" step="1" title="Height of the area to fill (mm).">
+  </div>
+  <div id="countRow">
+    <label for="nx" title="Number of shapes in a row. For the hexagonal arrangement this counts honeycomb cells — the shapes sit on their vertices.">Shapes across</label>
+    <input type="number" id="nx" value="10" min="1" step="1" title="Number of shapes in a row. For the hexagonal arrangement this counts honeycomb cells — the shapes sit on their vertices.">
+    <label for="ny" title="Number of rows. For the hexagonal arrangement this counts honeycomb cells — the shapes sit on their vertices.">Shapes down</label>
+    <input type="number" id="ny" value="10" min="1" step="1" title="Number of rows. For the hexagonal arrangement this counts honeycomb cells — the shapes sit on their vertices.">
+    <div class="hint" id="countHexHint">
+      For the hexagonal arrangement the counts are honeycomb cells, not
+      shapes — the shapes sit on their vertices.
+    </div>
+  </div>
+  <label for="spacingX" title="Center distance between neighboring shapes in a row (mm).">Spacing across (mm, center to center)</label>
+  <input type="number" id="spacingX" value="15" min="0.1" step="0.5" title="Center distance between neighboring shapes in a row (mm).">
+  <div id="spacingYRow">
+    <label for="spacingY" title="Center distance between rows (mm). Applies to the square and staggered arrangements; triangular and hexagonal rows follow from the spacing across.">Spacing down (mm, center to center)</label>
+    <input type="number" id="spacingY" value="15" min="0.1" step="0.5" title="Center distance between rows (mm). Applies to the square and staggered arrangements; triangular and hexagonal rows follow from the spacing across.">
+  </div>
+  <label for="style" title="Outlines for cutting holes, filled shapes for engraving.">Shape style</label>
+  <select id="style" title="Outlines for cutting holes, filled shapes for engraving.">
+    <option value="cut" selected>Outline (cut)</option>
+    <option value="fill">Filled (engrave)</option>
+  </select>
+  <label for="stroke" title="Stroke width of the cut lines in the SVG (mm); laser software usually wants hairlines.">Cut line width (mm)</label>
+  <input type="number" id="stroke" value="0.08" min="0.01" step="0.01" title="Stroke width of the cut lines in the SVG (mm); laser software usually wants hairlines.">
+  <label for="color" title="Color of the shapes — laser software assigns operations by color.">Shape color</label>
+  <select id="color" title="Color of the shapes — laser software assigns operations by color.">
+    <option value="#000000" selected>Black</option>
+    <option value="#ff0000">Red</option>
+    <option value="#00ff00">Green</option>
+    <option value="#0000ff">Blue</option>
+  </select>
+  <div class="chk" title="Draw a rectangle around the pattern; the pattern is centered inside it.">
+    <input type="checkbox" id="withBox">
+    <label for="withBox">Box around pattern</label>
+  </div>
+  <div id="boxRow">
+    <button type="button" id="fitBox" class="secondary" title="Set the box size to the pattern extent plus padding, rounded up to a round number.">Fit box to pattern</button>
+    <label for="boxW" title="Width of the surrounding box (mm).">Box width (mm)</label>
+    <input type="number" id="boxW" value="150" min="1" step="1" title="Width of the surrounding box (mm).">
+    <label for="boxH" title="Height of the surrounding box (mm).">Box height (mm)</label>
+    <input type="number" id="boxH" value="150" min="1" step="1" title="Height of the surrounding box (mm).">
+    <label for="boxColor" title="Color of the box rectangle — laser software assigns operations by color.">Box color</label>
+    <select id="boxColor" title="Color of the box rectangle — laser software assigns operations by color.">
+      <option value="#000000" selected>Black</option>
+      <option value="#ff0000">Red</option>
+      <option value="#00ff00">Green</option>
+      <option value="#0000ff">Blue</option>
+    </select>
+  </div>
+  <button id="download" title="Save the pattern as an SVG file.">Download SVG</button>
+  <div id="warnings"></div>
+  <div class="hint">
+    A grid of repeated shapes — drill marks, ventilation, masks or
+    decoration. The warning reports thin material bridges between the
+    holes. Hover any option for details.
+  </div>
+</aside>
+<main>
+  <div id="preview"></div>
+</main>
+<script src="js/svglib.js"></script>
+<script src="js/patterngen.js"></script>
+<script src="js/pattern.js"></script>
+</body>
+</html>
