@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ruler generator</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="tool">
+<aside>
+  <a class="back" href="index.html">&larr; CHUPCKO's Garage Lab</a>
+  <h1>Ruler</h1>
+  <label for="units" title="Millimeters (1 mm / 5 mm / 1 cm ticks); inches divided binarily (1/2, 1/4, 1/8, 1/16 with gradually shorter ticks); or inches divided into tenths. Switching converts the length.">Scale</label>
+  <select id="units" title="Millimeters (1 mm / 5 mm / 1 cm ticks); inches divided binarily (1/2, 1/4, 1/8, 1/16 with gradually shorter ticks); or inches divided into tenths. Switching converts the length.">
+    <option value="mm" selected>Millimeters</option>
+    <option value="inchbin">Inches — binary (1/2 … 1/16)</option>
+    <option value="inchdec">Inches — decimal (1/10)</option>
+  </select>
+  <label for="length" id="lengthLabel" title="Scale length in the chosen unit.">Length (mm)</label>
+  <input type="number" id="length" value="150" min="1" step="1" title="Scale length in the chosen unit.">
+  <label for="marginL" title="Blank space before the start of the scale (mm); 0 = the scale starts right at the cut edge.">Left margin (mm)</label>
+  <input type="number" id="marginL" value="0" min="0" step="1" title="Blank space before the start of the scale (mm); 0 = the scale starts right at the cut edge.">
+  <label for="marginR" title="Blank space after the end of the scale (mm).">Right margin (mm)</label>
+  <input type="number" id="marginR" value="0" min="0" step="1" title="Blank space after the end of the scale (mm).">
+  <label for="height" title="Height of the ruler body (mm).">Height (mm)</label>
+  <input type="number" id="height" value="25" min="5" step="1" title="Height of the ruler body (mm).">
+  <div id="fineRow" class="chk" title="Add the finest ticks: half millimeters, 1/32 inch on the binary scale or 1/20 on the decimal one.">
+    <input type="checkbox" id="fine">
+    <label for="fine" id="fineLabel">Half-millimeter ticks</label>
+  </div>
+  <div id="tick05Row">
+    <label for="tick05" title="Length of the finest tick (mm): half millimeter, 1/32 or 1/20 inch.">Tiny tick (mm)</label>
+    <input type="number" id="tick05" value="2" min="0.5" step="0.5" title="Length of the finest tick (mm): half millimeter, 1/32 or 1/20 inch.">
+  </div>
+  <label for="tick1" title="Length of the smallest tick (mm): 1 mm, 1/10 or 1/16 inch.">Small tick (mm)</label>
+  <input type="number" id="tick1" value="3" min="0.5" step="0.5" title="Length of the smallest tick (mm): 1 mm, 1/10 or 1/16 inch.">
+  <label for="tick5" title="Length of the middle tick (mm): 5 mm or 1/2 inch; the binary in-between levels scale between the small and middle tick.">Middle tick (mm)</label>
+  <input type="number" id="tick5" value="5" min="0.5" step="0.5" title="Length of the middle tick (mm): 5 mm or 1/2 inch; the binary in-between levels scale between the small and middle tick.">
+  <label for="tick10" title="Length of the longest tick (mm): 1 cm or a whole inch.">Long tick (mm)</label>
+  <input type="number" id="tick10" value="8" min="0.5" step="0.5" title="Length of the longest tick (mm): 1 cm or a whole inch.">
+  <div class="chk" title="Engrave numbers above the longest ticks: 0 and centimeters or whole inches — single-stroke digits, engraving friendly.">
+    <input type="checkbox" id="labels" checked>
+    <label for="labels">Numbers (engrave)</label>
+  </div>
+  <div id="labelSizeRow">
+    <label for="labelSize" title="Height of the engraved digits (mm).">Number size (mm)</label>
+    <input type="number" id="labelSize" value="3" min="1" step="0.5" title="Height of the engraved digits (mm).">
+  </div>
+  <div class="chk" id="inverseRow" title="Mirror the scale: zero on the right, numbers growing to the left — for measuring from the right edge.">
+    <input type="checkbox" id="inverse">
+    <label for="inverse">Inverse (right to left)</label>
+  </div>
+  <label for="stroke" title="Stroke width of all lines in the SVG (mm); laser software usually wants hairlines.">Line width (mm)</label>
+  <input type="number" id="stroke" value="0.08" min="0.01" step="0.01" title="Stroke width of all lines in the SVG (mm); laser software usually wants hairlines.">
+  <label for="markColor" title="Color of the ticks and numbers — the engraving operation.">Marks color (engrave)</label>
+  <select id="markColor" title="Color of the ticks and numbers — the engraving operation.">
+    <option value="#000000" selected>Black</option>
+    <option value="#ff0000">Red</option>
+    <option value="#00ff00">Green</option>
+    <option value="#0000ff">Blue</option>
+  </select>
+  <label for="boxColor" title="Color of the ruler outline — the cutting operation.">Outline color (cut)</label>
+  <select id="boxColor" title="Color of the ruler outline — the cutting operation.">
+    <option value="#ff0000" selected>Red</option>
+    <option value="#000000">Black</option>
+    <option value="#00ff00">Green</option>
+    <option value="#0000ff">Blue</option>
+  </select>
+  <button id="download" title="Save the ruler as an SVG file.">Download SVG</button>
+  <div id="warnings"></div>
+  <div class="hint">
+    An engraved ruler: ticks and numbers in the marks color, the outline in
+    the cut color. Hover any option for details.
+  </div>
+</aside>
+<main>
+  <div id="preview"></div>
+</main>
+<script src="js/svglib.js"></script>
+<script src="js/rulergen.js"></script>
+<script src="js/ruler.js"></script>
+</body>
+</html>
