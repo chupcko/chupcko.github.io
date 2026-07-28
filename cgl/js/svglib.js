@@ -20,6 +20,36 @@ function svgDoc(w, h, body) {
     'mm" viewBox="0 0 ' + w + ' ' + h + '">\n' + body + '</svg>\n';
 }
 
+// Parse a dimension string into millimeters. Bare numbers are read in
+// defaultUnit ('mm' or 'inch'); every term may carry its own unit (mm, cm,
+// in, ") which then applies to the whole term. Accepted forms:
+//   150 · 2.5 · 2,5 · 2" · 2in · 15cm · 1/2 · 2 1/2 · 2-1/2 · 2+1/2 ·
+//   2 1/2" · 2" + 3mm
+// Returns NaN for anything it cannot parse.
+function parseDim(str, defaultUnit) {
+  const UNITS = { mm: 1, cm: 10, in: 25.4, '"': 25.4 };
+  const def = defaultUnit === 'inch' || defaultUnit === 'in' ? 25.4 : 1;
+  const s = String(str).toLowerCase().replace(/,/g, '.').replace(/\s+/g, ' ').trim();
+  if (!s) return NaN;
+  let total = 0;
+  for (const term of s.split('+')) {
+    // optional decimal, optional fraction (space or dash separated),
+    // optional unit — at least one of the number parts must be present
+    const m = term.trim().match(
+      /^(?:(\d+(?:\.\d+)?)(?![\d/]))?(?:[ -]?(\d+)\s*\/\s*(\d+))?\s*(mm|cm|in|")?$/);
+    if (!m || (m[1] === undefined && m[2] === undefined)) return NaN;
+    const dec = m[1] !== undefined ? parseFloat(m[1]) : 0;
+    let frac = 0;
+    if (m[2] !== undefined) {
+      const den = parseInt(m[3], 10);
+      if (!(den > 0)) return NaN;
+      frac = parseInt(m[2], 10) / den;
+    }
+    total += (dec + frac) * (m[4] ? UNITS[m[4]] : def);
+  }
+  return total;
+}
+
 // Box dimension fitted to a content dimension: 20 mm of padding, rounded up
 // to a number ending in 00 or 50.
 function fitBoxDim(v) {

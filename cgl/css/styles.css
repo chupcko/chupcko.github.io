@@ -89,6 +89,15 @@ body.tool a.back:hover { text-decoration: underline; }
 
 body.tool h1 { font-size: 1.1rem; margin: 0 0 16px; color: var(--accent); }
 
+body.tool h2 {
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin: 14px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid #e4e4e4;
+  color: var(--accent);
+}
+
 body.tool label {
   display: block;
   font-size: 0.8rem;
@@ -137,6 +146,8 @@ body.tool button.secondary {
   border: 1px solid #ccc;
 }
 body.tool button.secondary:hover { background: #e4e4e4; }
+
+body.tool .echo { font-size: 0.72rem; color: #999; margin: 2px 0 0; min-height: 0.9em; }
 
 body.tool #warnings { margin-top: 12px; font-size: 0.8rem; color: #b03a2e; }
 body.tool #warnings div { margin-bottom: 6px; }
