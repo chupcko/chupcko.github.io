@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laser stencil text generator</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="tool">
+<aside>
+  <a class="back" href="index.html">&larr; CHUPCKO's Garage Lab</a>
+  <h1>Stencil text</h1>
+  <label for="text" title="The text to render as Stencil Std Bold vector outlines.">Text</label>
+  <input type="text" id="text" value="STENCIL" title="The text to render as Stencil Std Bold vector outlines.">
+  <label for="sizeMode" title="Which dimension the value below fixes — the other one follows from the text proportions.">Given dimension</label>
+  <select id="sizeMode" title="Which dimension the value below fixes — the other one follows from the text proportions.">
+    <option value="width" selected>Text width</option>
+    <option value="height">Text height</option>
+  </select>
+  <label for="sizeValue" title="Target size of the chosen dimension (mm); the computed other dimension is shown below.">Value (mm)</label>
+  <input type="number" id="sizeValue" value="100" min="1" step="1" title="Target size of the chosen dimension (mm); the computed other dimension is shown below.">
+  <div id="computed"></div>
+  <label for="stroke" title="Stroke width of the outlines in the SVG (mm); laser software usually wants hairlines.">Line width (mm)</label>
+  <input type="number" id="stroke" value="0.08" min="0.01" step="0.01" title="Stroke width of the outlines in the SVG (mm); laser software usually wants hairlines.">
+  <label for="color" title="Color of the text outlines — laser software assigns operations by color.">Text color</label>
+  <select id="color" title="Color of the text outlines — laser software assigns operations by color.">
+    <option value="#000000" selected>Black</option>
+    <option value="#ff0000">Red</option>
+    <option value="#00ff00">Green</option>
+    <option value="#0000ff">Blue</option>
+  </select>
+  <div class="chk" title="Draw a rectangle around the text; the text is centered inside it.">
+    <input type="checkbox" id="withBox">
+    <label for="withBox">Box around text</label>
+  </div>
+  <div id="boxRow">
+    <button type="button" id="fitBox" class="secondary" title="Set the box size to the text extent plus padding, rounded up to a round number.">Fit box to text</button>
+    <label for="boxW" title="Width of the surrounding box (mm).">Box width (mm)</label>
+    <input type="number" id="boxW" value="120" min="1" step="1" title="Width of the surrounding box (mm).">
+    <label for="boxH" title="Height of the surrounding box (mm).">Box height (mm)</label>
+    <input type="number" id="boxH" value="40" min="1" step="1" title="Height of the surrounding box (mm).">
+    <label for="boxColor" title="Color of the box rectangle — laser software assigns operations by color.">Box color</label>
+    <select id="boxColor" title="Color of the box rectangle — laser software assigns operations by color.">
+      <option value="#000000" selected>Black</option>
+      <option value="#ff0000">Red</option>
+      <option value="#00ff00">Green</option>
+      <option value="#0000ff">Blue</option>
+    </select>
+  </div>
+  <button id="download" title="Save the text as an SVG file.">Download SVG</button>
+  <div id="warnings"></div>
+  <div class="hint">
+    Text as vector outlines of Stencil Std Bold, parsed from the font file
+    in the browser. Hover any option for details.
+  </div>
+</aside>
+<main>
+  <div id="preview"></div>
+</main>
+<script src="js/svglib.js"></script>
+<script src="js/font.js"></script>
+<script src="js/textgen.js"></script>
+<script src="js/stencil.js"></script>
+</body>
+</html>

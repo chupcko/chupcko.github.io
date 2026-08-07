@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Round stamp generator</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="tool">
+<aside>
+  <a class="back" href="index.html">&larr; CHUPCKO's Garage Lab</a>
+  <h1>Round stamp</h1>
+
+  <label for="diameter" title="Outside diameter of the stamp in millimeters.">Diameter (mm)</label>
+  <input type="number" id="diameter" value="40" min="20" max="500" step="1" title="Outside diameter of the stamp in millimeters.">
+
+  <h2>Upper arc</h2>
+  <div class="chk">
+    <input type="checkbox" id="showTop" checked>
+    <label for="showTop">Show upper text</label>
+  </div>
+  <div id="topOpts">
+    <label for="topText">Text</label>
+    <input type="text" id="topText" value="Upper text">
+    <label for="topFont">Font</label>
+    <select id="topFont" class="font-select"></select>
+    <label for="topSize">Text size (mm)</label>
+    <input type="number" id="topSize" value="4" min="1" step="0.5">
+    <label for="topCircleDiameter" title="Diameter of the invisible baseline circle followed by the upper text.">Text circle diameter (mm)</label>
+    <input type="number" id="topCircleDiameter" value="30" min="1" step="1">
+    <div class="echo" id="topCircleEcho"></div>
+  </div>
+
+  <h2>Lower arc</h2>
+  <div class="chk">
+    <input type="checkbox" id="showBottom" checked>
+    <label for="showBottom">Show lower text</label>
+  </div>
+  <div id="bottomOpts">
+    <label for="bottomText">Text</label>
+    <input type="text" id="bottomText" value="Lower text">
+    <label for="bottomFont">Font</label>
+    <select id="bottomFont" class="font-select"></select>
+    <label for="bottomSize">Text size (mm)</label>
+    <input type="number" id="bottomSize" value="4" min="1" step="0.5">
+    <label for="bottomCircleDiameter" title="Diameter of the invisible baseline circle followed by the lower text.">Text circle diameter (mm)</label>
+    <input type="number" id="bottomCircleDiameter" value="34" min="1" step="1">
+    <div class="echo" id="bottomCircleEcho"></div>
+  </div>
+
+  <h2>Center</h2>
+  <div class="chk">
+    <input type="checkbox" id="showCenter" checked>
+    <label for="showCenter">Show center text</label>
+  </div>
+  <div id="centerOpts">
+    <label for="centerText">Text</label>
+    <input type="text" id="centerText" value="CGL">
+    <label for="centerFont">Font</label>
+    <select id="centerFont" class="font-select"></select>
+    <label for="centerSize">Text size (mm)</label>
+    <input type="number" id="centerSize" value="11" min="1" step="0.5">
+  </div>
+
+  <h2>Style</h2>
+  <div class="chk" title="Draw the main outside circle of the stamp impression.">
+    <input type="checkbox" id="outerRing" checked>
+    <label for="outerRing">Outer stamp ring</label>
+  </div>
+  <div id="outerRingOpts">
+    <label for="outerRingDiameter" title="Outside diameter of the main stamp ring.">Outer ring diameter (mm)</label>
+    <input type="number" id="outerRingDiameter" value="39" min="1" step="1">
+    <label for="outerRingStroke" title="Line width of the outer stamp ring.">Outer ring line width (mm)</label>
+    <input type="number" id="outerRingStroke" value="0.3" min="0.01" step="0.05">
+    <label for="outerRingStyle">Outer ring line style</label>
+    <select id="outerRingStyle">
+      <option value="solid" selected>Solid</option>
+      <option value="dashed">Dashed</option>
+      <option value="dotted">Dotted</option>
+      <option value="dashdot">Dash-dot</option>
+    </select>
+  </div>
+  <div class="chk" title="Draw a second circle just inside the outside edge.">
+    <input type="checkbox" id="innerRing" checked>
+    <label for="innerRing">Inner ring</label>
+  </div>
+  <div id="innerRingOpts">
+    <label for="innerRingDiameter" title="Outside diameter of the inner stamp ring.">Inner ring diameter (mm)</label>
+    <input type="number" id="innerRingDiameter" value="37" min="1" step="1">
+    <label for="innerRingStroke" title="Line width of the inner stamp ring.">Inner ring line width (mm)</label>
+    <input type="number" id="innerRingStroke" value="0.2" min="0.01" step="0.05">
+    <label for="innerRingStyle">Inner ring line style</label>
+    <select id="innerRingStyle">
+      <option value="solid" selected>Solid</option>
+      <option value="dashed">Dashed</option>
+      <option value="dotted">Dotted</option>
+      <option value="dashdot">Dash-dot</option>
+    </select>
+  </div>
+  <div class="chk" title="Draw an additional solid circle inside the other stamp rings.">
+    <input type="checkbox" id="additionalRing" checked>
+    <label for="additionalRing">Additional ring</label>
+  </div>
+  <div id="additionalRingOpts">
+    <label for="additionalRingDiameter">Additional ring diameter (mm)</label>
+    <input type="number" id="additionalRingDiameter" value="28" min="1" step="1">
+    <label for="additionalRingStroke">Additional ring line width (mm)</label>
+    <input type="number" id="additionalRingStroke" value="0.1" min="0.01" step="0.05">
+    <label for="additionalRingStyle">Additional ring line style</label>
+    <select id="additionalRingStyle">
+      <option value="solid" selected>Solid</option>
+      <option value="dashed">Dashed</option>
+      <option value="dotted">Dotted</option>
+      <option value="dashdot">Dash-dot</option>
+    </select>
+  </div>
+  <label for="color" title="One color is used for the rings and every text outline.">Stamp color</label>
+  <select id="color">
+    <option value="#000000" selected>Black</option>
+    <option value="#ff0000">Red</option>
+    <option value="#0000ff">Blue</option>
+    <option value="#00ff00">Green</option>
+  </select>
+  <div class="chk" title="Flip the complete stamp impression horizontally for making a stamp plate.">
+    <input type="checkbox" id="mirror">
+    <label for="mirror">Mirror horizontally</label>
+  </div>
+  <div class="chk" title="Make a negative impression: fill the stamp area and knock the text and rings out of it.">
+    <input type="checkbox" id="invert">
+    <label for="invert">Invert impression</label>
+  </div>
+
+  <h2>Cutting outline</h2>
+  <div class="chk" title="Add a separate circle around the stamp for the cutting operation.">
+    <input type="checkbox" id="cutOutline" checked>
+    <label for="cutOutline">Add cutting outline</label>
+  </div>
+  <div id="cutOutlineOpts">
+    <label for="cutStroke" title="Hairline width of the cutting circle in the exported SVG.">Cut line width (mm)</label>
+    <input type="number" id="cutStroke" value="0.08" min="0.01" step="0.01">
+    <label for="cutColor" title="A separate color lets laser software assign the cutting operation independently.">Cut line color</label>
+    <select id="cutColor">
+      <option value="#ff0000" selected>Red</option>
+      <option value="#000000">Black</option>
+      <option value="#0000ff">Blue</option>
+      <option value="#00ff00">Green</option>
+    </select>
+  </div>
+
+  <button id="download" title="Save the stamp as an SVG file.">Download SVG</button>
+  <div id="computed"></div>
+  <div id="warnings"></div>
+  <div class="hint">All lettering is exported as vector outlines, so the SVG does not depend on installed fonts.</div>
+</aside>
+<main>
+  <div id="preview"></div>
+</main>
+<script src="js/svglib.js"></script>
+<script src="js/font.js"></script>
+<script src="js/textgen.js"></script>
+<script src="js/stampgen.js"></script>
+<script src="js/stamp.js"></script>
+</body>
+</html>
