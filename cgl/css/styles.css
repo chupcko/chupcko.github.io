@@ -186,6 +186,54 @@ body.tool .hint {
   line-height: 1.4;
 }
 
+/* ===== card tool (SVG-to-STL upload) ===== */
+body.tool .dropzone {
+  display: block;
+  border: 1.5px dashed #ccc;
+  border-radius: 8px;
+  padding: 14px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #555;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: border-color 0.15s;
+}
+body.tool .dropzone:hover { border-color: var(--accent); }
+body.tool .dropzone input { display: none; }
+body.tool .dropzone strong { color: #2b2b2b; }
+
+body.tool .echo { font-size: 0.75rem; color: #888; margin: 4px 0 0; min-height: 1em; }
+body.tool .echo.err { color: #b03a2e; }
+
+body.tool .thumbwrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+body.tool .thumbwrap canvas {
+  display: block;
+  width: 100%;
+  max-width: 460px;
+  height: auto;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fff;
+  image-rendering: pixelated;
+}
+
+body.tool .statusbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  justify-content: center;
+  font-size: 0.78rem;
+  color: #888;
+  border-top: 1px solid #ddd;
+  margin-top: 12px;
+  padding-top: 10px;
+}
+body.tool .statusbar .stat { display: flex; gap: 5px; align-items: baseline; }
+body.tool .statusbar .stat-value { color: #2b2b2b; font-family: ui-monospace, monospace; }
+
+body.tool button:disabled { opacity: 0.5; cursor: not-allowed; }
+
 @media (max-width: 720px) {
   body.tool { flex-direction: column; }
   body.tool aside { width: 100%; border-right: 0; border-bottom: 1px solid #ddd; }

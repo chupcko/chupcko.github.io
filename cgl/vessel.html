@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Round vessel generator</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="tool">
+<aside>
+  <a class="back" href="index.html">&larr; CHUPCKO's Garage Lab</a>
+  <h1>Round vessel</h1>
+  <label for="dims" title="Outer = overall diameter at the wall's outer face. Inner = usable diameter at the wall's inner face.">Diameter is</label>
+  <select id="dims" title="Outer = overall diameter at the wall's outer face. Inner = usable diameter at the wall's inner face.">
+    <option value="outer" selected>Outer (overall size)</option>
+    <option value="inner">Inner (usable space)</option>
+  </select>
+  <label for="diameter" title="Vessel diameter (mm) at the wall, interpreted per the choice above.">Diameter (mm)</label>
+  <input type="number" id="diameter" value="150" min="10" step="1" title="Vessel diameter (mm) at the wall, interpreted per the choice above.">
+  <label for="height" title="Height of the wall panel (mm) — the vessel's finished height.">Height (mm)</label>
+  <input type="number" id="height" value="100" min="5" step="1" title="Height of the wall panel (mm) — the vessel's finished height.">
+  <label for="thickness" title="Sheet thickness (mm), used for the wall, bottom and top frame alike.">Material thickness (mm)</label>
+  <input type="number" id="thickness" value="2" min="0.5" step="0.5" title="Sheet thickness (mm), used for the wall, bottom and top frame alike.">
+  <label for="bottomRim" title="How far the bottom disk extends beyond the wall's outer face (mm) — also the margin left past the slot ring, so keep it a few mm at least.">Bottom foot / rim (mm)</label>
+  <input type="number" id="bottomRim" value="4" min="0" step="0.5" title="How far the bottom disk extends beyond the wall's outer face (mm) — also the margin left past the slot ring, so keep it a few mm at least.">
+  <label for="frameWidth" title="How much the top frame ring extends beyond the wall on both sides (mm) — its stiffening band.">Top frame width (mm)</label>
+  <input type="number" id="frameWidth" value="6" min="1" step="0.5" title="How much the top frame ring extends beyond the wall on both sides (mm) — its stiffening band.">
+  <label for="tabWidth" title="Width of each tab on the wall's top and bottom edges, and of the matching slots cut in the bottom disk and top frame.">Tab width (mm)</label>
+  <input type="number" id="tabWidth" value="8" min="1" step="0.5" title="Width of each tab on the wall's top and bottom edges, and of the matching slots cut in the bottom disk and top frame.">
+  <label for="tabPitch" title="Target center-to-center spacing between tabs around the circumference; the actual count is rounded to fit evenly.">Tab pitch (mm)</label>
+  <input type="number" id="tabPitch" value="20" min="4" step="1" title="Target center-to-center spacing between tabs around the circumference; the actual count is rounded to fit evenly.">
+  <label for="pattern" title="The bend pattern cut into the wall so it can roll into a cylinder — also the wall's texture once rolled.">Bend pattern</label>
+  <select id="pattern" title="The bend pattern cut into the wall so it can roll into a cylinder — also the wall's texture once rolled.">
+    <option value="straight" selected>Straight (classic hinge)</option>
+    <option value="staggered">Staggered (brick)</option>
+    <option value="diagonal">Diagonal (zigzag)</option>
+    <option value="dashed">Dashed (segmented)</option>
+    <option value="wave">Wave (decorative)</option>
+  </select>
+  <label for="pitch" title="Center-to-center spacing between slit columns around the circumference (mm).">Slit pitch (mm)</label>
+  <input type="number" id="pitch" value="5" min="1" step="0.5" title="Center-to-center spacing between slit columns around the circumference (mm).">
+  <label for="margin" title="Uncut band left at the top and bottom of the wall (mm) — holds the panel together before and after rolling.">Top/bottom margin (mm)</label>
+  <input type="number" id="margin" value="3" min="1" step="0.5" title="Uncut band left at the top and bottom of the wall (mm) — holds the panel together before and after rolling.">
+  <div id="staggeredRow">
+    <label for="overlap" title="How much the two staggered rows overlap in the middle band (mm).">Row overlap (mm)</label>
+    <input type="number" id="overlap" value="4" min="0" step="0.5" title="How much the two staggered rows overlap in the middle band (mm).">
+  </div>
+  <div id="diagonalRow">
+    <label for="angle" title="Angle from vertical of each zigzag run (degrees); each run climbs one slit pitch before reversing direction.">Zigzag angle (°)</label>
+    <input type="number" id="angle" value="25" min="-80" max="80" step="1" title="Angle from vertical of each zigzag run (degrees); each run climbs one slit pitch before reversing direction.">
+  </div>
+  <div id="dashedRow">
+    <label for="dashCount" title="Number of dash segments per column.">Dashes per column</label>
+    <input type="number" id="dashCount" value="3" min="1" step="1" title="Number of dash segments per column.">
+    <label for="tie" title="Uncut tie between dashes in the same column (mm).">Tie between dashes (mm)</label>
+    <input type="number" id="tie" value="2.5" min="0.5" step="0.5" title="Uncut tie between dashes in the same column (mm).">
+  </div>
+  <div id="waveRow">
+    <label for="amplitude" title="How far each wavy slit swings sideways from its column center (mm).">Wave amplitude (mm)</label>
+    <input type="number" id="amplitude" value="1.5" min="0.5" step="0.5" title="How far each wavy slit swings sideways from its column center (mm).">
+    <label for="wavelength" title="Vertical length of one full wave cycle (mm).">Wavelength (mm)</label>
+    <input type="number" id="wavelength" value="16" min="2" step="1" title="Vertical length of one full wave cycle (mm).">
+  </div>
+  <label for="stroke" title="Stroke width of the cut lines in the SVG (mm); laser software usually wants hairlines.">Cut line width (mm)</label>
+  <input type="number" id="stroke" value="0.08" min="0.01" step="0.01" title="Stroke width of the cut lines in the SVG (mm); laser software usually wants hairlines.">
+  <label for="color" title="Color of the cut lines — laser software assigns operations by color.">Cut color</label>
+  <select id="color" title="Color of the cut lines — laser software assigns operations by color.">
+    <option value="#000000" selected>Black</option>
+    <option value="#ff0000">Red</option>
+    <option value="#00ff00">Green</option>
+    <option value="#0000ff">Blue</option>
+  </select>
+  <button id="download" title="Save the template as an SVG file.">Download SVG</button>
+  <div id="warnings"></div>
+  <div class="hint">
+    Three parts: the wall strip (top, with a row of tabs on both its top and
+    bottom edges), and the bottom disk + top frame ring (below it, each with
+    a matching ring of slots). The wall rolls into a cylinder along its bend
+    pattern, its tabs drop into the slots to locate and hold it — no
+    partial-depth engraving, everything is a single through-cut — and its
+    two straight ends are glued in a plain butt seam. Hover any option for
+    details.
+  </div>
+</aside>
+<main>
+  <div id="preview"></div>
+</main>
+<script src="js/svglib.js"></script>
+<script src="js/vesselgen.js"></script>
+<script src="js/vessel.js"></script>
+</body>
+</html>
