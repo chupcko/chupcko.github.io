@@ -26,6 +26,8 @@ body {
 
 h1.center { color: var(--accent); }
 
+h2.section-title { color: var(--accent); font-size: 1rem; margin: 12px 0 -6px; }
+
 .canvas-row {
   display: flex;
   flex-direction: row;

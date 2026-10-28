@@ -10,76 +10,52 @@
 <aside>
   <a class="back" href="index.html">&larr; CHUPCKO's Garage Lab</a>
   <h1>Business card</h1>
-  <label class="dropzone" for="svgFile" title="Black areas of the artwork become thin (light passes through), white areas stay thick (light is blocked).">
-    <strong>Click to upload an SVG</strong><br>the file stays only in your browser
+  <label class="dropzone" for="svgFile" title="Upload an SVG made of filled paths only: every filled shape rises above the base plate. Strokes and text are ignored.">
+    <strong>Click to upload an SVG</strong><br>paths only — the file stays in your browser
     <input type="file" id="svgFile" accept=".svg,image/svg+xml">
   </label>
   <span id="fileLabel" class="echo">No SVG loaded yet</span>
   <div id="statusMsg" class="echo">Upload an SVG to begin.</div>
 
   <div id="paramsPanel" style="display:none;">
-    <h2>Model type</h2>
-    <label for="modelType" title="Relief: the bottom stays flat, the top is one smooth mesh that rises and falls with the artwork. Hollow: both faces stay flat, with a cavity built between them wherever light should pass through.">Construction</label>
-    <select id="modelType" title="Relief: the bottom stays flat, the top is one smooth mesh that rises and falls with the artwork. Hollow: both faces stay flat, with a cavity built between them wherever light should pass through.">
-      <option value="relief">Relief — one side is a smooth mesh, the other flat</option>
-      <option value="hollow">Both sides flat — hollow inside</option>
-    </select>
-
     <h2>Card</h2>
     <label for="cardWidth" title="Card width (mm); auto-filled from the SVG's own physical size when it declares one.">Width (mm)</label>
     <input type="number" id="cardWidth" value="85" min="20" max="200" step="0.5" title="Card width (mm); auto-filled from the SVG's own physical size when it declares one.">
     <label for="cardHeight" title="Card height (mm); auto-filled from the SVG's own physical size when it declares one.">Height (mm)</label>
     <input type="number" id="cardHeight" value="55" min="20" max="200" step="0.5" title="Card height (mm); auto-filled from the SVG's own physical size when it declares one.">
-    <div id="fitField">
-      <label for="fitMode" title="How the artwork maps onto the card when its aspect ratio doesn't match the card's.">Artwork scaling</label>
-      <select id="fitMode" title="How the artwork maps onto the card when its aspect ratio doesn't match the card's.">
-        <option value="stretch">Stretch (fill the card)</option>
-        <option value="contain">Fit (preserve aspect ratio, pad with white)</option>
-        <option value="cover">Fill and crop edges</option>
-      </select>
-    </div>
-    <div class="chk" title="Swap which color reads as thin/hollow and which as thick/solid.">
-      <input type="checkbox" id="invert">
-      <label for="invert">Invert (white = thin/hollow, black = thick/solid)</label>
-    </div>
-    <div id="borderField" style="display:none;">
-      <label for="borderMM" title="A band around the card edge that stays fully solid — strengthens the edge and keeps the cavity from breaking through to the outside.">Solid border / frame (mm)</label>
-      <input type="number" id="borderMM" value="2" min="0" max="20" step="0.5" title="A band around the card edge that stays fully solid — strengthens the edge and keeps the cavity from breaking through to the outside.">
-    </div>
 
     <h2>Thickness</h2>
-    <label for="minThick"><span id="minThickLabel">Min. (black, mm)</span></label>
-    <input type="number" id="minThick" value="0.2" min="0.1" max="2" step="0.05" title="For clean layer lines, choose a multiple of your printer's layer height.">
-    <label for="maxThick"><span id="maxThickLabel">Max. (white, mm)</span></label>
-    <input type="number" id="maxThick" value="0.8" min="0.2" max="3" step="0.05" title="For clean layer lines, choose a multiple of your printer's layer height.">
-    <div class="hint" id="thickHint">For clean layer lines, choose a multiple of your layer height (e.g. 0.2 / 0.4 / 0.6 / 0.8 mm for a 0.2 mm layer).</div>
+    <label for="baseThick" title="Flat plate under everything (mm).">Base (mm)</label>
+    <input type="number" id="baseThick" value="0.2" min="0.1" max="2" step="0.05" title="Flat plate under everything (mm).">
+    <label for="embossThick" title="How far the filled artwork rises above the base (mm).">Relief (mm)</label>
+    <input type="number" id="embossThick" value="0.2" min="0.1" max="3" step="0.05" title="How far the filled artwork rises above the base (mm).">
+    <div class="hint">For clean layer lines, choose multiples of your layer height (e.g. 0.2 mm base + 0.2 mm relief for a 0.2 mm layer).</div>
+    <div class="chk"><input type="checkbox" id="mirror"><label for="mirror" title="Flip the artwork horizontally. Needed for stamps, so the print reads correctly.">Mirror (for stamps)</label></div>
+    <div class="chk"><input type="checkbox" id="invert"><label for="invert" title="Black stays down, everything else rises.">Invert (background rises)</label></div>
 
-    <h2>Smoothing &amp; mesh</h2>
-    <label for="blurMM" title="Softens the black/white transition edges so the surface is smooth, without sharp &quot;steps&quot;.">Smoothing (mm)</label>
-    <input type="number" id="blurMM" value="0.3" min="0" max="3" step="0.05" title="Softens the black/white transition edges so the surface is smooth, without sharp &quot;steps&quot;.">
-    <label for="cellSize" title="A smaller value gives finer detail, but a larger STL and a slower preview.">Mesh resolution (mm/cell)</label>
-    <input type="number" id="cellSize" value="0.4" min="0.15" max="2" step="0.05" title="A smaller value gives finer detail, but a larger STL and a slower preview.">
-
-    <button id="downloadBtn" disabled title="Save the model as a binary STL file, ready to slice.">Download STL</button>
+    <button id="downloadBtn" disabled title="Save the model as a 3MF file, ready to slice.">Download 3MF</button>
   </div>
   <div class="hint">
-    Brightness becomes thickness: black is thin (or hollow), white is thick
-    (or solid). Relief keeps one flat side; the other bulges. Hollow keeps
-    both sides flat with a cavity between them — print in translucent
-    filament and light-test with an LED. Hover any option for details.
+    How to prepare the SVG: everything must be a filled path — strokes
+    never rise, and text must first become paths (Inkscape: select all,
+    then Path &gt; Object to Path, plus Path &gt; Stroke to Path for
+    outlines). Black shapes rise exactly as drawn, white shapes stay
+    flat; Invert leaves black down and raises everything else,
+    Mirror flips the artwork for stamps. A frame drawn in the SVG
+    becomes a raised frame. Hover any option for details.
   </div>
 </aside>
 <main>
   <div id="previewPanel" style="display:none;">
     <div id="preview">
       <div class="thumbwrap">
-        <canvas id="thumbCanvas" width="400" height="259"></canvas>
-        <div id="thumbCaption" class="hint">Artwork brightness map (dark → light) used for thickness/fill.</div>
+        <canvas id="artPreview" width="400" height="259"></canvas>
+        <div id="thumbCaption" class="hint">Relief preview, top view: black shapes rise above the light base.</div>
       </div>
       <div class="statusbar">
-        <span class="stat">Grid <span class="stat-value" id="statGrid">–</span></span>
+        <span class="stat">Shapes <span class="stat-value" id="statShapes">–</span></span>
         <span class="stat">Triangles <span class="stat-value" id="statTris">–</span></span>
-        <span class="stat">STL ≈ <span class="stat-value" id="statSize">–</span></span>
+        <span class="stat">3MF ≈ <span class="stat-value" id="statSize">–</span></span>
       </div>
     </div>
   </div>

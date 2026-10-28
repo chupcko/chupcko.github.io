@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Foldable box</title>
+<link rel="stylesheet" href="css/styles.css">
+<style>
+  #stage { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 12px; cursor: grab; }
+  #stage:active { cursor: grabbing; }
+  #stage svg { width: 100%; height: auto; display: block; background: #fff; }
+  #shapeParams fieldset { display: grid; grid-template-columns: 1fr; gap: 4px 8px; margin: 10px 0 0; padding: 8px; }
+  #shapeParams legend { font-size: 0.78rem; font-weight: 600; color: var(--accent); padding: 0 4px; }
+  #shapeParams label { display: flex; flex-direction: column; font-size: 0.7rem; margin: 0; }
+  #shapeParams span.v { font-size: 0.7rem; color: #555; }
+
+</style>
+</head>
+<body class="tool">
+<aside>
+  <a class="back" href="index.html">&larr; CHUPCKO's Garage Lab</a>
+  <h1>Foldable box</h1>
+  <div class="params">
+    <label for="width" title="Base width (mm); the whole net scales with it.">Width (mm)</label>
+    <input id="width" type="number" step="any" value="90" title="Base width (mm); the whole net scales with it.">
+    <label for="depth" title="Base depth (mm).">Depth (mm)</label>
+    <input id="depth" type="number" step="any" value="55" title="Base depth (mm).">
+    <label for="height" title="Wall height (mm).">Height (mm)</label>
+    <input id="height" type="number" step="any" value="24" title="Wall height (mm).">
+    <label for="thickness" title="Sheet thickness (mm); teeth, slots, grooves and rounding follow it.">Thickness (mm)</label>
+    <input id="thickness" type="number" step="any" value="0.5" title="Sheet thickness (mm); teeth, slots, grooves and rounding follow it.">
+    <label for="cornerRadius" title="Rounding of the outer side-square corners (mm); 0 means sharp corners.">Side square corner radius (mm)</label>
+    <input id="cornerRadius" type="number" step="any" value="2" title="Rounding of the outer side-square corners (mm); 0 means sharp corners.">
+    <label for="trapezoidHeight" title="Lid ear height (mm); 0 means no ears, at most the wall height.">Trapezoid height (mm)</label>
+    <input id="trapezoidHeight" type="number" step="any" min="0" value="5" title="Lid ear height (mm); 0 means no ears, at most the wall height.">
+    <div class="chk"><input id="showLidTop" type="checkbox" checked><label for="showLidTop" title="Show the lid panel with the tongue and ears.">Lid</label></div>
+    <div class="chk" id="showTongueWrap"><input id="showTongue" type="checkbox" checked><label for="showTongue" title="Show the tongue on top of the lid.">Tongue</label></div>
+    <div class="chk" id="tongueRectWrap"><input id="bezierTongue" type="checkbox" checked><label for="bezierTongue" title="Use the fitted bezier tongue curve; uncheck for a plain rectangle.">Curved tongue</label></div>
+    <div class="chk" id="showLidPointsWrap"><input id="showLidPoints" type="checkbox"><label for="showLidPoints" title="Show the dots marking the fitted tongue curve points (needs Lid, Tongue and Bezier tongue).">Tongue bezier dots</label></div>
+    <div class="chk"><input id="bottomNotch" type="checkbox" checked><label for="bottomNotch" title="Cut the notch out of the bottom wall edge.">Bottom notch</label></div>
+    <div class="chk" id="showBotPointsWrap"><input id="showBotPoints" type="checkbox"><label for="showBotPoints" title="Show the dots marking the fitted notch curve points (needs Bottom notch).">Bottom notch dots</label></div>
+    <div id="botDepthWrap"><label for="botDepth" title="How deep the notch cuts into the bottom wall edge.">Notch depth (mm)</label>
+    <input id="botDepth" type="number" step="any" value="5" title="How deep the notch cuts into the bottom wall edge."></div>
+    <div class="chk" id="showSmileWrap"><input id="showSmile" type="checkbox" checked><label for="showSmile" title="Cut the smile slot in the tongue and the mouth slot in the bottom wall.">Smile and mouth</label></div>
+  </div>
+  <button id="dl3mf" title="Save the grooved folding net as a 3MF file, ready to slice.">Download 3MF</button>
+  <div id="dlInfo" class="echo"></div>
+  <div id="shapeParams"></div>
+  <div class="hint">
+    Black lines are cut, green lines fold (a V-groove in the 3MF),
+    red lines are cut out (teeth slots, smile, mouth). Hover any option
+    for details. The 3MF plate rests on the XY plane, thickness along +Z.
+  </div>
+</aside>
+<main>
+  <div id="stage"></div>
+</main>
+<script src="js/foldbox.js"></script>
+</body>
+</html>
